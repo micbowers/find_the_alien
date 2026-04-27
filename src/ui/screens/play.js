@@ -2,6 +2,7 @@ import { game, currentTeam } from '../../core/state.js';
 import { commitAsk, continueAfterReveal, startNextHunt, undoLastMove, restartMatchKeepTeams } from '../../core/engine.js';
 import { getCoachOn, setCoachOn } from '../../core/prefs.js';
 import { gmSpeak, clear as gmClear } from '../../core/gm.js';
+import { playSFX, playAlienVoice, preloadAlienVoice, pruneAlienVoiceCacheExcept } from '../../core/audio.js';
 import { renderAlienGrid } from '../components/alienGrid.js';
 import { renderEvidenceRail } from '../components/evidenceRail.js';
 import { renderScoreboard } from '../components/scoreboard.js';
@@ -114,6 +115,18 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
       renderQuestionPicker(pickerSlot, {
         onSelect: (qid) => {
           commitAsk(qid);
+          const move = game.pendingReveal;
+          // Play SFX + alien voice for the answer
+          if (move) {
+            const eliminated = move.eliminated > 0;
+            playSFX(move.answer ? 'reveal-yes' : 'reveal-no');
+            if (eliminated) playSFX('eliminate');
+            // Alien speaks (after a tiny delay so it doesn't clash with the SFX)
+            const secretName = game.secretAlien?.name;
+            if (secretName) {
+              setTimeout(() => playAlienVoice(secretName, move.answer ? 'yes' : 'no'), 220);
+            }
+          }
           if (game.huntWinner) {
             const winner = game.teams.find(t => t.id === game.huntWinner);
             gmSpeak('detective_won_hunt', {
@@ -121,6 +134,10 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
               n: game.match?.huntIndex ?? 1,
               alien: game.secretAlien?.name ?? '?',
             });
+            // Hunt-won sting + the alien's "you found me" line (slight delay)
+            playSFX('hunt-won');
+            const secretName = game.secretAlien?.name;
+            if (secretName) setTimeout(() => playAlienVoice(secretName, 'found_me'), 700);
           }
           setPlayMode('reveal');
           repaint();
@@ -181,6 +198,10 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
       `;
       mainEl.querySelector('#btn-next-hunt').addEventListener('click', () => {
         startNextHunt();
+        // Preload the new hunt's secret alien voice clips; drop the previous.
+        const newSecret = game.secretAlien?.name;
+        pruneAlienVoiceCacheExcept(newSecret);
+        if (newSecret) preloadAlienVoice(newSecret);
         gmSpeak('hunt_start', {
           n: game.match?.huntIndex ?? 1,
           total: game.match?.totalHunts ?? 1,
@@ -254,6 +275,9 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
       onKeepTeams: () => {
         restartMatchKeepTeams();
         gmClear();
+        const newSecret = game.secretAlien?.name;
+        pruneAlienVoiceCacheExcept(newSecret);
+        if (newSecret) preloadAlienVoice(newSecret);
         gmSpeak('match_start', {
           hunts: game.match?.totalHunts ?? game.teams.length,
           teams: game.teams.length,

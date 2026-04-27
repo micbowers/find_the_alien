@@ -1,7 +1,9 @@
 import { game, loadState, resetEverything, wasV0Wiped } from '../core/state.js';
 import { startMatch } from '../core/engine.js';
 import { gmSpeak, clear as gmClear } from '../core/gm.js';
+import { unlockAudio, playSFX, preloadAlienVoice, pruneAlienVoiceCacheExcept } from '../core/audio.js';
 import { mountGMBubble } from './components/gmBubble.js';
+import { mountMuteToggle } from './components/muteToggle.js';
 import { renderHomeScreen } from './screens/home.js';
 import { renderSetupScreen } from './screens/setup.js';
 import { renderPlayScreen, setPlayMode } from './screens/play.js';
@@ -47,6 +49,9 @@ function paint() {
         setPlayMode('idle');
         currentScreen = 'play';
         gmClear();
+        const secretName = game.secretAlien?.name;
+        pruneAlienVoiceCacheExcept(secretName);
+        if (secretName) preloadAlienVoice(secretName);
         gmSpeak('match_start', {
           hunts: game.match?.totalHunts ?? cleaned.length,
           teams: cleaned.length,
@@ -84,6 +89,9 @@ function paint() {
         setPlayMode('idle');
         currentScreen = 'play';
         gmClear();
+        const secretName = game.secretAlien?.name;
+        pruneAlienVoiceCacheExcept(secretName);
+        if (secretName) preloadAlienVoice(secretName);
         gmSpeak('match_start', {
           hunts: game.match?.totalHunts ?? names.length,
           teams: names.length,
@@ -107,6 +115,7 @@ function paint() {
 }
 
 function announceMatchDone() {
+  playSFX('match-done');
   gmSpeak('match_done', {});
   // Compute Eliminator Champion (most cumulative elims; tiebreak by fewest turns)
   const ranked = [...game.teams].sort((a, b) => {
@@ -152,8 +161,11 @@ export function mountApp(rootEl) {
           <h1 class="title">Find The Alien</h1>
           <div class="subtitle">Ask good questions. Eliminate the impossible.</div>
         </div>
-        <div class="count">
-          ALIENS<b id="hdr-alive-count">24</b>
+        <div class="header-right">
+          <div id="hdr-mute"></div>
+          <div class="count">
+            ALIENS<b id="hdr-alive-count">24</b>
+          </div>
         </div>
       </header>
 
@@ -178,6 +190,19 @@ export function mountApp(rootEl) {
   // shows whichever line is currently being narrated.
   mountGMBubble(rootEl.querySelector('#gm-bubble-host'));
 
+  // Mount the mute toggle in the header.
+  mountMuteToggle(rootEl.querySelector('#hdr-mute'));
+
+  // First-tap audio unlock for iOS Safari. Any pointer/keydown event on the
+  // app shell resumes a suspended AudioContext. Removed after the first hit.
+  const unlockOnce = () => {
+    unlockAudio();
+    rootEl.removeEventListener('pointerdown', unlockOnce, true);
+    rootEl.removeEventListener('keydown', unlockOnce, true);
+  };
+  rootEl.addEventListener('pointerdown', unlockOnce, true);
+  rootEl.addEventListener('keydown', unlockOnce, true);
+
   // Restore persisted state if available; route accordingly.
   const restored = loadState();
   if (restored && game.started && game.match) {
@@ -188,6 +213,9 @@ export function mountApp(rootEl) {
       // Reasonable default play-mode after refresh; if a reveal was in flight,
       // re-enter reveal mode so the user can continue from where they left off.
       setPlayMode(game.pendingReveal ? 'reveal' : (game.huntWinner ? 'between-hunts' : 'idle'));
+      // Preload the current hunt's alien voice clips.
+      const secretName = game.secretAlien?.name;
+      if (secretName) preloadAlienVoice(secretName);
     }
   } else {
     currentScreen = 'home';
