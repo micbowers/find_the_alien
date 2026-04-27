@@ -544,6 +544,13 @@
   letter-spacing: 0.1em;
   margin-left: 6px;
 }
+.scoreboard .badge-emoji {
+  display: inline-block;
+  font-size: 22px;
+  margin-left: 8px;
+  line-height: 1;
+  vertical-align: -4px;
+}
 
 /* Toast (kept minimal, used only for technical errors / transient hints) */
 .toast {

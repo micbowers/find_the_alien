@@ -49,8 +49,8 @@ export function renderScoreboard(container, opts = {}) {
     if (isDetective) tr.classList.add('is-detective');
     tr.innerHTML = `
       <td class="team-name">${escape(row.team.name)}
-        ${isDetective ? '<span class="badge-detection">★ DETECTIVE</span>' : ''}
-        ${isLeader ? '<span class="badge-elimination">★ LEADER</span>' : ''}
+        ${isDetective ? '<span class="badge-emoji" title="Detective — cracked this hunt">🕵️</span>' : ''}
+        ${isLeader ? '<span class="badge-emoji" title="Leader — most cumulative eliminations">🏆</span>' : ''}
         ${isNextUp && !isDetective && !isLeader ? '<span class="badge-detection" style="background:var(--arc);color:white;">UP NEXT</span>' : ''}
       </td>
       <td class="num">${row.team.totalTurns}</td>
