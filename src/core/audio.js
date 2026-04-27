@@ -189,30 +189,38 @@ function playMatchDone(c) {
 // Alien voice MP3s — preload on hunt start, play on reveal/celebrate
 // ============================================================
 
-// MP3 paths are derived from the alien's name (lowercase). The line types are:
-//   'yes', 'no', 'found_me'
-function urlFor(alienName, type) {
+// MP3 paths are derived from the alien's name (lowercase) and the line key.
+// Move-quality buckets have 5 numbered variants each (great_move_1..5);
+// found_me is a single un-numbered file.
+const VARIANT_BUCKETS = ['great_move', 'okay_move', 'bad_move'];
+const VARIANTS_PER_BUCKET = 5;
+
+function urlFor(alienName, fileKey) {
   const safe = (alienName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  return `/audio/aliens/${safe}/${type}.mp3`;
+  return `/audio/aliens/${safe}/${fileKey}.mp3`;
 }
 
-function ensureAudioElement(alienName, type) {
-  const key = `${alienName}:${type}`;
+function ensureAudioElement(alienName, fileKey) {
+  const key = `${alienName}:${fileKey}`;
   if (alienAudioCache.has(key)) return alienAudioCache.get(key);
   const audio = new Audio();
   audio.preload = 'auto';
-  audio.src = urlFor(alienName, type);
+  audio.src = urlFor(alienName, fileKey);
   // If load fails (file missing), the element silently sits idle; play() will reject.
   alienAudioCache.set(key, audio);
   return audio;
 }
 
 // Preload all line types for one alien (the current hunt's secret).
+// 1 found_me + 5 × 3 variants = 16 audio elements.
 // Idempotent — re-calling for the same alien is a no-op.
 export function preloadAlienVoice(alienName) {
   if (!alienName) return;
-  for (const type of ['great_move', 'okay_move', 'bad_move', 'found_me']) {
-    ensureAudioElement(alienName, type);
+  ensureAudioElement(alienName, 'found_me');
+  for (const bucket of VARIANT_BUCKETS) {
+    for (let i = 1; i <= VARIANTS_PER_BUCKET; i++) {
+      ensureAudioElement(alienName, `${bucket}_${i}`);
+    }
   }
 }
 
@@ -230,11 +238,42 @@ export function pruneAlienVoiceCacheExcept(alienName) {
   }
 }
 
-// Play a specific line for an alien. No-op when muted or missing.
+// Track the most recently played variant per (alien, bucket) so we don't
+// repeat the same line back-to-back. Reset on hunt change implicitly via
+// alien-cache pruning, but the small Map below is fine to leave around.
+const lastVariantByKey = new Map();
+
+function pickNextVariant(alienName, bucket) {
+  const key = `${alienName}:${bucket}`;
+  const last = lastVariantByKey.get(key);
+  let next;
+  if (VARIANTS_PER_BUCKET <= 1) {
+    next = 1;
+  } else {
+    do {
+      next = 1 + Math.floor(Math.random() * VARIANTS_PER_BUCKET);
+    } while (next === last);
+  }
+  lastVariantByKey.set(key, next);
+  return next;
+}
+
+// Play a line for an alien. `type` is one of:
+//   'found_me'                           — single-clip
+//   'great_move' | 'okay_move' | 'bad_move' — picks one of 5 variants
+// No-op when muted or when the file is missing on disk.
 export function playAlienVoice(alienName, type) {
-  if (muted) return;
-  if (!alienName) return;
-  const audio = ensureAudioElement(alienName, type);
+  if (muted || !alienName) return;
+  let fileKey;
+  if (type === 'found_me') {
+    fileKey = 'found_me';
+  } else if (VARIANT_BUCKETS.includes(type)) {
+    const idx = pickNextVariant(alienName, type);
+    fileKey = `${type}_${idx}`;
+  } else {
+    return;
+  }
+  const audio = ensureAudioElement(alienName, fileKey);
   try {
     audio.currentTime = 0;
     const p = audio.play();
