@@ -16,6 +16,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { QUESTIONS } from '../src/data/questions.js';
 import { buildSystemPrompt } from '../lib/prompts.js';
 import { checkRateLimit, getClientIp } from '../lib/rateLimit.js';
+import { applyCors } from '../lib/cors.js';
 
 const MODEL = 'claude-haiku-4-5-20251001';
 const MAX_TOKENS = 400;
@@ -36,6 +37,11 @@ function getClient() {
 }
 
 export default async function handler(req, res) {
+  // CORS + Origin guard. Handles preflight OPTIONS and rejects requests
+  // whose Origin isn't from our domain (or a Vercel preview / localhost).
+  const corsResult = applyCors(req, res);
+  if (corsResult !== 'ok') return;
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
