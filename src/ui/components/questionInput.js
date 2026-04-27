@@ -49,7 +49,7 @@ export function renderQuestionPicker(container, { onSelect, onPreview }) {
       <div id="qp-status"></div>
 
       <details id="qp-list-toggle" class="qp-list-toggle">
-        <summary class="qp-list-summary">Or pick from a list of questions</summary>
+        <summary class="qp-list-summary">📋 Pick from the list of questions</summary>
         <div id="qp-list-host"></div>
       </details>
     </div>
@@ -85,7 +85,7 @@ export function renderQuestionPicker(container, { onSelect, onPreview }) {
       listToggle.open = true;
       ensureCannedRendered();
       const summary = listToggle.querySelector('.qp-list-summary');
-      if (summary) summary.textContent = 'Pick from the list of questions (auto-opened)';
+      if (summary) summary.textContent = '📋 Pick from the list (opened for you)';
     }
   }
 
