@@ -36,8 +36,25 @@ except ImportError:
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LINES_PATH = REPO_ROOT / "tools" / "alien_voice_lines.json"
 OUTPUT_ROOT = REPO_ROOT / "public" / "audio" / "aliens"
+ENV_PATH = REPO_ROOT / ".env"
 LINE_TYPES = ("yes", "no", "found_me")
 SAFE_NAME_RE = re.compile(r"[^a-z0-9]")
+
+
+def load_dotenv(path: Path) -> None:
+    """Tiny .env loader. Mirrors python-dotenv's basic behavior so we don't
+    need the package: KEY=VALUE per line, # comments allowed, optional quotes,
+    existing env vars take precedence."""
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)
 
 
 def safe_dir(name: str) -> str:
@@ -57,6 +74,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    load_dotenv(ENV_PATH)
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         print("ERROR: OPENAI_API_KEY env var is not set.", file=sys.stderr)

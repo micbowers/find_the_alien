@@ -16,11 +16,19 @@ You need an OpenAI API key (separate from the Anthropic one used for `/api/inter
 
 ### Run
 
+The script reads `OPENAI_API_KEY` from the environment. Easiest is the project's `.env` file:
+
 ```bash
-# From the repo root
-export OPENAI_API_KEY=sk-...
+# Copy the template if you haven't yet
+cp .env.example .env
+
+# Edit .env and set OPENAI_API_KEY=sk-...
+
+# Then from the repo root
 python tools/generate_alien_voices.py
 ```
+
+`.env` is gitignored, so the key never gets committed. (You can also `export OPENAI_API_KEY=sk-...` in your shell instead — env vars take precedence over `.env`.)
 
 This reads `tools/alien_voice_lines.json` and writes MP3s to:
 
