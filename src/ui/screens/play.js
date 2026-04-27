@@ -326,14 +326,25 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
 function showRestartModal(container, { onKeepTeams, onChooseNew }) {
   const host = container.querySelector('#play-modal-host');
   if (!host) return;
+  const isSolo = game.mode === 'solo';
+  // The two button handlers are the same in both modes (onKeepTeams calls
+  // restartMatchKeepTeams which preserves mode + names; onChooseNew exits to
+  // home). Only the copy changes so solo players don't see "teams".
+  const heading = isSolo ? 'Try a new alien?' : 'Restart match?';
+  const body = isSolo
+    ? 'This drops your current alien and starts fresh. Your personal best is safe.'
+    : 'This wipes the current scores and starts a new match. Want to keep your teams or choose new ones?';
+  const keepLabel = isSolo ? 'Pick a new alien' : 'Keep these teams';
+  const newLabel  = isSolo ? 'Back to home'    : 'Choose new teams';
+
   host.innerHTML = `
     <div class="modal-backdrop" id="modal-backdrop">
       <div class="modal-confirm" role="dialog" aria-modal="true">
-        <h3>Restart match?</h3>
-        <p>This wipes the current scores and starts a new match. Want to keep your teams or choose new ones?</p>
+        <h3>${heading}</h3>
+        <p>${body}</p>
         <div class="modal-buttons">
-          <button class="btn" id="modal-keep">Keep these teams</button>
-          <button class="btn outline" id="modal-new">Choose new teams</button>
+          <button class="btn" id="modal-keep">${keepLabel}</button>
+          <button class="btn outline" id="modal-new">${newLabel}</button>
         </div>
         <button class="modal-cancel" id="modal-cancel">cancel</button>
       </div>
