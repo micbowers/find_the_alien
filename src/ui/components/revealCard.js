@@ -33,8 +33,22 @@ function renderCelebration(container, move) {
   const huntIdx = game.match?.huntIndex ?? 1;
   const questionsThisHunt = game.moves.filter(m => m.type === 'ask').length;
 
+  // Identify the running Eliminator Champion (most cumulative elims so far,
+  // INCLUDING this hunt's eliminations which haven't yet been folded into
+  // totalElim — endHunt does that on Continue).
+  const runningElims = game.teams.map(t => ({
+    team: t,
+    elim: t.totalElim + (t.elim || 0),
+  }));
+  runningElims.sort((a, b) => b.elim - a.elim);
+  const top = runningElims[0];
+  const championLine = top && top.elim > 0
+    ? `<div class="celebration-champion">🏆 Match leader: <b>${escape(top.team.name)}</b> with ${top.elim} eliminations</div>`
+    : '';
+
   container.innerHTML = `
     <div class="celebration-card">
+      <div class="celebration-trophy-label">🕵️ HUNT ${huntIdx} DETECTIVE TROPHY</div>
       <div class="celebration-headline">YOU FOUND ME!</div>
       <div class="celebration-alien">
         <div class="alien-card celebration-alien-card">
@@ -48,6 +62,7 @@ function renderCelebration(container, move) {
       <div class="celebration-sub">
         ${questionsThisHunt} question${questionsThisHunt === 1 ? '' : 's'} to find the alien.
       </div>
+      ${championLine}
     </div>
   `;
 }

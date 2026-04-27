@@ -426,6 +426,13 @@
   text-align: center;
   box-shadow: 0 6px 18px rgba(245, 196, 0, 0.25);
 }
+.celebration-trophy-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 800;
+  color: #8a6a00;
+  margin-bottom: 6px;
+}
 .celebration-headline {
   font-size: 36px;
   font-weight: 900;
@@ -434,6 +441,17 @@
   text-shadow: 2px 2px 0 var(--yellow);
   animation: celebration-pulse 1.4s ease-in-out infinite;
 }
+.celebration-champion {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: rgba(14, 158, 138, 0.12);
+  border: 1px solid var(--teal);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--steel);
+  display: inline-block;
+}
+.celebration-champion b { color: var(--teal); }
 .celebration-alien {
   display: flex;
   justify-content: center;

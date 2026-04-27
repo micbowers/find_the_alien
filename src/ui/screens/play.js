@@ -238,7 +238,12 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
     sbEl.innerHTML = '';
     renderScoreboard(sbEl, {
       highlightDetective: !!game.huntWinner,
-      highlightLeader: playMode === 'between-hunts',
+      // Keep the Eliminator Champion badge live throughout the match, not
+      // just at hunt-end, so the running leader is always visible. Otherwise
+      // the Detective badge appears alone during the celebration card and
+      // reads like the only winner — but Eliminator Champion is the headline
+      // prize.
+      highlightLeader: true,
       activeTeamId: playMode === 'idle' ? currentTeam()?.id : null,
     });
     renderEvidenceRail(evidenceEl);
