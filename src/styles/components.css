@@ -2,8 +2,8 @@
 .panel {
   background: #f7f5f0;
   border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
   border: 1px solid #e8e4dd;
 }
 .panel h2 {
@@ -44,7 +44,7 @@
 .alien-card {
   background: var(--white);
   border-radius: 8px;
-  padding: 6px 4px 4px;
+  padding: 4px 3px 3px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -52,6 +52,7 @@
   border: 2px solid #d8d4cc;
   transition: transform 0.12s ease, border-color 0.12s ease, opacity 0.3s ease, filter 0.3s ease;
   position: relative;
+  min-width: 0;
 }
 .alien-card.eliminated {
   opacity: 0.22;
@@ -77,9 +78,13 @@
 .alien-name {
   color: var(--steel);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 12px;
   margin-top: 2px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .alien-svg-wrap {
   width: 100%;
@@ -112,19 +117,21 @@
 }
 .form-group select:focus, .form-group input:focus { outline: 2px solid var(--teal); }
 
-/* Buttons */
+/* Buttons — tap targets sized to ~44px tall for touch */
 .btn {
   background: var(--ember);
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 12px 18px;
+  padding: 13px 18px;
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.12s ease;
+  min-height: 44px;
+  line-height: 1.2;
 }
 .btn:hover { background: #e05a20; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -154,7 +161,7 @@
   border-bottom: 1px solid #e8e4dd;
 }
 .stat .label { font-size: 10px; letter-spacing: 0.2em; color: var(--gray); font-weight: 700; }
-.stat .value { font-size: 28px; font-weight: 800; margin-top: 2px; line-height: 1; }
+.stat .value { font-size: 24px; font-weight: 800; margin-top: 2px; line-height: 1; }
 .stat .sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
 .stat.alive { border-left-color: var(--teal); }
 .stat.elim  { border-left-color: var(--ember); }
@@ -308,7 +315,7 @@
 .qp-list-summary:hover { color: var(--ember); }
 
 .question-list {
-  max-height: 320px;
+  max-height: 240px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -551,7 +558,7 @@
   margin-bottom: 10px;
 }
 .evidence-list {
-  max-height: 320px;
+  max-height: 220px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -686,4 +693,24 @@
   cursor: pointer;
   font-size: 18px;
   padding: 0;
+}
+
+/* ============================================================
+   Tablet+ overrides: restore the more spacious sizing once the
+   viewport gives us room. Phone styles above are the baseline.
+   ============================================================ */
+@media (min-width: 768px) {
+  .panel { padding: 18px; margin-bottom: 14px; }
+  .panel h2 { margin-bottom: 12px; }
+  .alien-card { padding: 6px 4px 4px; }
+  .alien-name { font-size: 14px; }
+  .stat .value { font-size: 28px; }
+  .turn-banner .team-name { font-size: 18px; }
+  .evidence-list { max-height: 320px; }
+  .question-list { max-height: 320px; }
+  .panel-tip { font-size: 13px; }
+}
+
+@media (min-width: 1024px) {
+  .panel { padding: 20px; }
 }
