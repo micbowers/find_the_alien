@@ -1,5 +1,7 @@
 import { game, loadState, resetEverything, wasV0Wiped } from '../core/state.js';
 import { startMatch } from '../core/engine.js';
+import { gmSpeak, clear as gmClear } from '../core/gm.js';
+import { mountGMBubble } from './components/gmBubble.js';
 import { renderHomeScreen } from './screens/home.js';
 import { renderSetupScreen } from './screens/setup.js';
 import { renderPlayScreen, setPlayMode } from './screens/play.js';
@@ -44,6 +46,17 @@ function paint() {
         startMatch(cleaned);
         setPlayMode('idle');
         currentScreen = 'play';
+        gmClear();
+        gmSpeak('match_start', {
+          hunts: game.match?.totalHunts ?? cleaned.length,
+          teams: cleaned.length,
+          board: game.board.length,
+        });
+        gmSpeak('hunt_start', {
+          n: 1,
+          total: game.match?.totalHunts ?? cleaned.length,
+          starter: game.teams[0]?.name ?? '—',
+        });
         paint();
       },
     });
@@ -51,9 +64,11 @@ function paint() {
     renderPlayScreen(screenContainer, {
       onMatchDone: () => {
         currentScreen = 'match-done';
+        announceMatchDone();
         paint();
       },
       onResetMatch: () => {
+        gmClear();
         resetEverything();
         currentScreen = 'home';
         paint();
@@ -68,14 +83,45 @@ function paint() {
         startMatch(names);
         setPlayMode('idle');
         currentScreen = 'play';
+        gmClear();
+        gmSpeak('match_start', {
+          hunts: game.match?.totalHunts ?? names.length,
+          teams: names.length,
+          board: game.board.length,
+        });
+        gmSpeak('hunt_start', {
+          n: 1,
+          total: game.match?.totalHunts ?? names.length,
+          starter: game.teams[0]?.name ?? '—',
+        });
         paint();
       },
       onHome: () => {
+        gmClear();
         resetEverything();
         currentScreen = 'home';
         paint();
       },
     });
+  }
+}
+
+function announceMatchDone() {
+  gmSpeak('match_done', {});
+  // Compute Eliminator Champion (most cumulative elims; tiebreak by fewest turns)
+  const ranked = [...game.teams].sort((a, b) => {
+    if (b.totalElim !== a.totalElim) return b.totalElim - a.totalElim;
+    return a.totalTurns - b.totalTurns;
+  });
+  const top = ranked[0];
+  if (top && top.totalElim > 0) {
+    gmSpeak('eliminator_champion', {
+      team: top.name,
+      count: top.totalElim,
+      hunts: game.match?.totalHunts ?? game.teams.length,
+    });
+  } else {
+    gmSpeak('no_eliminator_champion', {});
   }
 }
 
@@ -113,6 +159,8 @@ export function mountApp(rootEl) {
 
       <div id="banner-host"></div>
 
+      <div id="gm-bubble-host" class="gm-bubble-host"></div>
+
       <main id="screen-container" class="screen"></main>
 
       <footer class="brand-footer">
@@ -125,6 +173,10 @@ export function mountApp(rootEl) {
   rootElRef = rootEl;
   screenContainer = rootEl.querySelector('#screen-container');
   bannerHost = rootEl.querySelector('#banner-host');
+
+  // Mount the persistent GM speech bubble. It subscribes to gm.js and
+  // shows whichever line is currently being narrated.
+  mountGMBubble(rootEl.querySelector('#gm-bubble-host'));
 
   // Restore persisted state if available; route accordingly.
   const restored = loadState();

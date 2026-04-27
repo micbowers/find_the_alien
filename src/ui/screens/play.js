@@ -1,6 +1,7 @@
 import { game, currentTeam } from '../../core/state.js';
 import { commitAsk, continueAfterReveal, startNextHunt, undoLastMove, restartMatchKeepTeams } from '../../core/engine.js';
 import { getCoachOn, setCoachOn } from '../../core/prefs.js';
+import { gmSpeak, clear as gmClear } from '../../core/gm.js';
 import { renderAlienGrid } from '../components/alienGrid.js';
 import { renderEvidenceRail } from '../components/evidenceRail.js';
 import { renderScoreboard } from '../components/scoreboard.js';
@@ -113,6 +114,14 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
       renderQuestionPicker(pickerSlot, {
         onSelect: (qid) => {
           commitAsk(qid);
+          if (game.huntWinner) {
+            const winner = game.teams.find(t => t.id === game.huntWinner);
+            gmSpeak('detective_won_hunt', {
+              team: winner?.name ?? '—',
+              n: game.match?.huntIndex ?? 1,
+              alien: game.secretAlien?.name ?? '?',
+            });
+          }
           setPlayMode('reveal');
           repaint();
         },
@@ -172,6 +181,11 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
       `;
       mainEl.querySelector('#btn-next-hunt').addEventListener('click', () => {
         startNextHunt();
+        gmSpeak('hunt_start', {
+          n: game.match?.huntIndex ?? 1,
+          total: game.match?.totalHunts ?? 1,
+          starter: game.teams[0]?.name ?? '—',
+        });
         setPlayMode('idle');
         repaint();
       });
@@ -239,6 +253,17 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
     showRestartModal(container, {
       onKeepTeams: () => {
         restartMatchKeepTeams();
+        gmClear();
+        gmSpeak('match_start', {
+          hunts: game.match?.totalHunts ?? game.teams.length,
+          teams: game.teams.length,
+          board: game.board.length,
+        });
+        gmSpeak('hunt_start', {
+          n: 1,
+          total: game.match?.totalHunts ?? game.teams.length,
+          starter: game.teams[0]?.name ?? '—',
+        });
         setPlayMode('idle');
         repaint();
       },
