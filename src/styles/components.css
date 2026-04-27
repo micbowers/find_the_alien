@@ -538,7 +538,8 @@
   background: var(--white);
   border: 2px solid var(--teal);
   border-radius: 10px;
-  display: inline-block;
+  display: block;
+  width: fit-content;
 }
 .solo-score-label {
   font-size: 11px;
@@ -562,7 +563,9 @@
   border-radius: 8px;
   font-size: 13px;
   color: var(--steel);
-  display: inline-block;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
 }
 .solo-pb-badge.is-new {
   background: rgba(245, 196, 0, 0.18);
