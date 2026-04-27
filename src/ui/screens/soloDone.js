@@ -68,14 +68,16 @@ export function renderSoloDoneScreen(container, { onPlayAgain, onHome }) {
         </div>
       </div>
 
-      <div class="solo-score">
-        <div class="solo-score-label">QUESTIONS ASKED</div>
-        <div class="solo-score-value">${score}</div>
+      <div class="solo-result-stack">
+        <div class="solo-score">
+          <div class="solo-score-label">QUESTIONS ASKED</div>
+          <div class="solo-score-value">${score}</div>
+        </div>
+
+        ${pbHtml}
       </div>
 
-      ${pbHtml}
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+      <div class="solo-done-actions">
         <button class="btn big" id="sd-again">▶ Play again</button>
         <button class="btn outline" id="sd-home">← Home</button>
       </div>

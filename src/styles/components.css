@@ -532,14 +532,20 @@
   justify-content: center;
   margin: 8px 0 16px;
 }
+/* Stack the QUESTIONS-ASKED card and the PB badge vertically, centered. */
+.solo-result-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 4px;
+}
 .solo-score {
-  margin: 14px auto;
   padding: 14px 18px;
   background: var(--white);
   border: 2px solid var(--teal);
   border-radius: 10px;
-  display: block;
-  width: fit-content;
+  text-align: center;
 }
 .solo-score-label {
   font-size: 11px;
@@ -556,16 +562,21 @@
   font-variant-numeric: tabular-nums;
 }
 .solo-pb-badge {
-  margin: 10px auto 0;
   padding: 10px 14px;
   background: var(--softgray);
   border: 1px solid var(--lightgray);
   border-radius: 8px;
   font-size: 13px;
   color: var(--steel);
-  display: block;
-  width: fit-content;
+  text-align: center;
   max-width: 100%;
+}
+.solo-done-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 18px;
 }
 .solo-pb-badge.is-new {
   background: rgba(245, 196, 0, 0.18);
