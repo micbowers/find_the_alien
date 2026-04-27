@@ -144,10 +144,10 @@ def main() -> int:
                 else:
                     out_path.write_bytes(resp.content)
                 generated += 1
-                print(f"  ✓ {name:>8s}  [{voice:>7s}]  {line_type:<9s}  {text!r}")
+                print(f"  [ok]  {name:>8s}  [{voice:>7s}]  {line_type:<9s}  {text!r}")
             except Exception as e:
                 errors += 1
-                print(f"  ✗ {name:>8s}  [{voice:>7s}]  {line_type:<9s}  ERROR: {e}", file=sys.stderr)
+                print(f"  [ERR] {name:>8s}  [{voice:>7s}]  {line_type:<9s}  {e}", file=sys.stderr)
 
     print()
     print(f"Done. Total: {total}  Generated: {generated}  Skipped (already existed): {skipped}  Errors: {errors}")
