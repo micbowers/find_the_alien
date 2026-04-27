@@ -37,7 +37,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 LINES_PATH = REPO_ROOT / "tools" / "alien_voice_lines.json"
 OUTPUT_ROOT = REPO_ROOT / "public" / "audio" / "aliens"
 ENV_PATH = REPO_ROOT / ".env"
-LINE_TYPES = ("yes", "no", "found_me")
+LINE_TYPES = ("great_move", "okay_move", "bad_move", "found_me")
 SAFE_NAME_RE = re.compile(r"[^a-z0-9]")
 
 

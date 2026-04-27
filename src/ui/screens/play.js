@@ -114,31 +114,39 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
       const pickerSlot = mainEl.querySelector('#picker-slot');
       renderQuestionPicker(pickerSlot, {
         onSelect: (qid) => {
+          // Snapshot alive count BEFORE the question; commitAsk mutates game.alive.
+          const aliveBefore = game.alive.size;
           commitAsk(qid);
           const move = game.pendingReveal;
-          // Play SFX + alien voice for the answer
+          const secretName = game.secretAlien?.name;
+
+          // SFX always: tonal blip for YES/NO + a poof if anyone got eliminated.
           if (move) {
-            const eliminated = move.eliminated > 0;
             playSFX(move.answer ? 'reveal-yes' : 'reveal-no');
-            if (eliminated) playSFX('eliminate');
-            // Alien speaks (after a tiny delay so it doesn't clash with the SFX)
-            const secretName = game.secretAlien?.name;
-            if (secretName) {
-              setTimeout(() => playAlienVoice(secretName, move.answer ? 'yes' : 'no'), 220);
-            }
+            if (move.eliminated > 0) playSFX('eliminate');
           }
+
           if (game.huntWinner) {
+            // Hunt won — skip move-quality commentary and play the climactic
+            // "you found me" line over the win fanfare instead.
             const winner = game.teams.find(t => t.id === game.huntWinner);
             gmSpeak('detective_won_hunt', {
               team: winner?.name ?? '—',
               n: game.match?.huntIndex ?? 1,
               alien: game.secretAlien?.name ?? '?',
             });
-            // Hunt-won sting + the alien's "you found me" line (slight delay)
             playSFX('hunt-won');
-            const secretName = game.secretAlien?.name;
             if (secretName) setTimeout(() => playAlienVoice(secretName, 'found_me'), 700);
+          } else if (move && secretName) {
+            // Hunt continues — alien comments on the player's move quality.
+            // Buckets mirror the Elimination Coach split-quality labels.
+            const fraction = aliveBefore > 0 ? move.eliminated / aliveBefore : 0;
+            const bucket = fraction >= 0.40 ? 'great_move'
+                         : fraction >= 0.15 ? 'okay_move'
+                         : 'bad_move';
+            setTimeout(() => playAlienVoice(secretName, bucket), 220);
           }
+
           setPlayMode('reveal');
           repaint();
         },

@@ -207,11 +207,11 @@ function ensureAudioElement(alienName, type) {
   return audio;
 }
 
-// Preload all three lines for one alien (the current hunt's secret).
+// Preload all line types for one alien (the current hunt's secret).
 // Idempotent — re-calling for the same alien is a no-op.
 export function preloadAlienVoice(alienName) {
   if (!alienName) return;
-  for (const type of ['yes', 'no', 'found_me']) {
+  for (const type of ['great_move', 'okay_move', 'bad_move', 'found_me']) {
     ensureAudioElement(alienName, type);
   }
 }
