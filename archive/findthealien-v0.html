@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find The Alien by Sparkworks · Think Through Anything</title>
+<meta name="description" content="A Game of Pattern Recognition & Process of Elimination">
+<meta name="author" content="Sparkworks">
+<meta name="theme-color" content="#1E2530">
+
+<!-- Open Graph (Facebook, iMessage, WhatsApp, Slack, LinkedIn) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sparkworks">
+<meta property="og:title" content="Find The Alien by Sparkworks · Think Through Anything">
+<meta property="og:description" content="A Game of Pattern Recognition & Process of Elimination">
+<meta property="og:image" content="aliens/29_klax.png">
+<meta property="og:image:alt" content="Klax the alien">
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Find The Alien by Sparkworks · Think Through Anything">
+<meta name="twitter:description" content="A Game of Pattern Recognition & Process of Elimination">
+<meta name="twitter:image" content="aliens/29_klax.png">
+<meta name="twitter:image:alt" content="Klax the alien">
+
+<style>
+:root {
+  --steel: #1E2530;
+  --ember: #D4501A;
+  --teal: #0E9E8A;
+  --yellow: #F5C400;
+  --arc: #3B7DD8;
+  --bone: #F2EFE8;
+  --purple: #8B4FD8;
+  --gray: #6B6B6B;
+  --lightgray: #E8E8E8;
+  --softgray: #F4F4F4;
+  --white: #FFFFFF;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #ffffff; color: var(--steel); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+body { min-height: 100vh; padding: 24px; }
+
+.main-layout {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Play tab internal split: grid left, controls right.
+   This goes INSIDE .wrap so it works alongside the main evidence rail. */
+.play-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 20px;
+  align-items: start;
+}
+.play-split .play-grid-col {
+  position: sticky;
+  top: 24px;
+}
+.play-split .play-controls-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.play-split .panel { margin-bottom: 0; }
+@media (max-width: 900px) {
+  .play-split { grid-template-columns: 1fr; }
+  .play-split .play-grid-col { position: static; }
+}
+
+/* Shrink grid cells inside play so all 24 fit on screen */
+.play-split .alien-card { padding: 5px 3px 3px; border-radius: 6px; border-width: 2px; }
+.play-split .alien-grid { gap: 6px; }
+.play-split .alien-name { font-size: 16px; margin-top: 2px; letter-spacing: 0.02em; }
+
+/* Header */
+.header {
+  border-bottom: 3px solid var(--ember);
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.header .brand { font-size: 14px; letter-spacing: 0.2em; color: var(--ember); font-weight: 700; }
+.header .title { font-size: 42px; font-weight: 800; color: var(--steel); margin-top: 4px; }
+.header .subtitle { font-size: 16px; color: var(--gray); font-style: italic; margin-top: 4px; }
+.header .count {
+  text-align: right;
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.15em;
+}
+.header .count b { color: var(--teal); font-size: 18px; display: block; margin-top: 2px; letter-spacing: 0.02em; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #d8d8d8;
+}
+.tab {
+  background: none;
+  border: none;
+  color: var(--gray);
+  padding: 12px 20px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  font-family: inherit;
+}
+.tab.active { color: var(--ember); border-bottom-color: var(--ember); }
+.tab:hover:not(.active) { color: var(--steel); }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* Panels */
+.panel {
+  background: #f7f5f0;
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #e8e4dd;
+}
+.panel h2 {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--ember);
+  margin: 0 0 16px;
+  font-weight: 700;
+}
+.panel h2 .step-num {
+  display: inline-block;
+  background: var(--ember);
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  font-size: 12px;
+  margin-right: 10px;
+}
+.panel.step-done { opacity: 0.5; }
+.panel.step-done h2 .step-num { background: var(--teal); }
+.panel.step-active { box-shadow: 0 0 0 2px var(--ember); }
+
+/* Alien grid */
+.alien-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  max-width: 900px;
+}
+.alien-card {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 8px 6px 6px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border: 3px solid #d8d4cc;
+  transition: transform 0.12s ease, border-color 0.12s ease, opacity 0.3s ease, filter 0.3s ease;
+  position: relative;
+}
+.alien-card:hover:not(.eliminated):not(.disabled) { transform: translateY(-2px); border-color: var(--yellow); }
+.alien-card.selected { border-color: var(--ember); box-shadow: 0 0 0 3px rgba(212, 80, 26, 0.3); }
+.alien-card.eliminated {
+  opacity: 0.22;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+.alien-card.eliminated::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 2px solid #888;
+  transform: rotate(-8deg);
+}
+.alien-card.disabled { cursor: not-allowed; opacity: 0.8; }
+.alien-name {
+  color: var(--steel);
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+}
+.alien-svg-wrap { width: 100%; aspect-ratio: 1 / 1.1; display: flex; align-items: center; justify-content: center; }
+
+.alien-card.secret-pick {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.5);
+}
+
+/* Preview-match highlight: shown when user clicks a question and preview toggle is ON.
+   Uses teal (the "yes" color) so it reads as "these are the aliens this question applies to". */
+.alien-card.preview-match {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(14, 158, 138, 0.45);
+}
+
+/* Toggle row for the preview feature */
+.preview-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #eae6de;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--steel);
+  cursor: pointer;
+  user-select: none;
+}
+.preview-toggle input { margin: 0; cursor: pointer; transform: scale(1.15); }
+.preview-toggle .preview-toggle-label { font-weight: 700; letter-spacing: 0.08em; }
+.preview-toggle .preview-toggle-hint { color: var(--gray); font-style: italic; margin-left: auto; font-size: 11px; }
+
+/* Split preview: shows YES/NO elimination counts under the question select.
+   Helps kids see that good questions split the remaining aliens in half. */
+.split-preview {
+  margin: 14px 0 16px;
+  padding: 14px;
+  background: #eae6de;
+  border-radius: 8px;
+  border: 1px solid #d8d4cc;
+}
+.split-preview-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.split-preview-title {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  color: var(--steel);
+}
+.split-preview-quality {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.split-preview-quality.good { color: var(--teal); }
+.split-preview-quality.okay { color: #b89400; }
+.split-preview-quality.bad { color: var(--ember); }
+.split-preview-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.split-preview-cell {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--white);
+  border-radius: 6px;
+  border: 2px solid transparent;
+}
+.split-preview-cell.yes { border-color: var(--teal); }
+.split-preview-cell.no { border-color: var(--ember); }
+.split-preview-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin-bottom: 6px;
+}
+.split-preview-cell.yes .split-preview-label { color: var(--teal); }
+.split-preview-cell.no .split-preview-label { color: var(--ember); }
+.split-preview-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.1;
+}
+.split-preview-big {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--steel);
+  font-variant-numeric: tabular-nums;
+}
+.split-preview-small {
+  font-size: 11px;
+  color: var(--gray);
+}
+.split-preview-bar {
+  height: 8px;
+  background: #d8d4cc;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+.split-preview-bar-yes { background: var(--teal); transition: flex-basis 0.2s ease; }
+.split-preview-bar-no  { background: var(--ember); transition: flex-basis 0.2s ease; }
+
+/* Secret alien display */
+.secret-display {
+  background: linear-gradient(135deg, #f7f5f0, #eae6de);
+  padding: 14px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #d8d4cc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.secret-display .label { font-size: 11px; letter-spacing: 0.2em; color: #b89400; font-weight: 700; }
+.secret-display .value { font-size: 18px; color: var(--steel); font-weight: 700; }
+.secret-display .hidden { color: var(--gray); font-style: italic; }
+.secret-display .spacer { flex: 1; }
+.secret-display-mini {
+  width: 54px;
+  height: 54px;
+  background: var(--bone);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+/* Turn banner */
+.turn-banner {
+  background: #eae6de;
+  padding: 14px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.turn-banner .turn-num {
+  background: var(--ember);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+}
+.turn-banner .team-name { font-size: 18px; font-weight: 700; color: var(--steel); }
+.turn-banner .turn-sub { color: var(--gray); font-size: 13px; margin-left: auto; font-style: italic; }
+
+/* Forms */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 11px; letter-spacing: 0.15em; color: var(--gray); margin-bottom: 6px; font-weight: 700; }
+.form-group select, .form-group input {
+  width: 100%;
+  background: #ffffff;
+  color: var(--steel);
+  border: 1px solid #c8c4bc;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: inherit;
+}
+.form-group select:focus, .form-group input:focus { outline: 2px solid var(--teal); }
+
+/* Buttons */
+.btn {
+  background: var(--ember);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn:hover { background: #e05a20; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.secondary { background: #d8d4cc; color: var(--steel); }
+.btn.secondary:hover { background: #c8c4bc; }
+.btn.teal { background: var(--teal); }
+.btn.teal:hover { background: #12b59f; }
+.btn.outline {
+  background: transparent;
+  border: 1px solid #c8c4bc;
+  color: var(--steel);
+}
+.btn.outline:hover { border-color: var(--ember); color: var(--ember); }
+.btn.big { padding: 16px 28px; font-size: 15px; }
+.btn.danger { background: #b33a3a; }
+
+/* Team management */
+.team-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: #eae6de;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.team-row .team-idx { color: var(--gray); font-size: 13px; min-width: 28px; }
+.team-row input { flex: 1; padding: 6px 8px; font-size: 13px; background: #ffffff; color: var(--steel); border: 1px solid #c8c4bc; border-radius: 4px; font-family: inherit; }
+.team-row input:focus { outline: 2px solid var(--teal); }
+.team-row .remove-btn { background: none; border: none; color: var(--gray); cursor: pointer; font-size: 18px; padding: 0 8px; }
+.team-row .remove-btn:hover { color: #b33a3a; }
+.team-row .move-btn {
+  background: #ffffff;
+  border: 1px solid #c8c4bc;
+  color: var(--steel);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  line-height: 1;
+}
+.team-row .move-btn:hover:not(:disabled) { background: #eae6de; }
+.team-row .move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.team-order-header {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  margin-bottom: 8px;
+}
+.team-order-header.show { display: flex; }
+.team-order-header .hint { font-size: 13px; color: var(--gray); }
+.team-order-header .btn { font-size: 13px; padding: 6px 12px; }
+
+/* Answer reveal */
+.answer-reveal {
+  padding: 20px;
+  border-radius: 10px;
+  margin: 20px 0;
+  text-align: center;
+}
+.answer-reveal.yes { background: linear-gradient(135deg, #0e9e8a, #076b5e); }
+.answer-reveal.no  { background: linear-gradient(135deg, #D4501A, #9c3a12); }
+.answer-reveal .answer-word {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+.answer-reveal .answer-sub {
+  font-size: 14px;
+  color: white;
+  margin-top: 12px;
+}
+.answer-reveal .elim-count {
+  color: var(--yellow);
+  font-weight: 900;
+  font-size: 22px;
+}
+
+/* Guess result */
+.guess-result {
+  padding: 24px;
+  border-radius: 10px;
+  margin: 20px 0;
+  text-align: center;
+}
+.guess-result.correct {
+  background: linear-gradient(135deg, var(--yellow), #d4a700);
+  color: var(--steel);
+}
+.guess-result.wrong {
+  background: linear-gradient(135deg, #b33a3a, #8a2020);
+  color: white;
+}
+.guess-result .verdict {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+.guess-result .detail { font-size: 16px; margin-top: 8px; }
+
+/* Scoreboard */
+.scoreboard { width: 100%; border-collapse: collapse; }
+.scoreboard th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--gray);
+  padding: 8px 12px;
+  border-bottom: 2px solid #c8c4bc;
+  font-weight: 700;
+}
+.scoreboard td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e8e4dd;
+  font-size: 18px;
+  vertical-align: middle;
+}
+.scoreboard td.num { font-variant-numeric: tabular-nums; font-weight: 700; }
+.scoreboard .team-name { font-weight: 600; color: var(--steel); }
+.scoreboard .elim { color: var(--ember); }
+.scoreboard .badge-detection { background: var(--yellow); color: var(--steel); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; margin-left: 6px; }
+.scoreboard .badge-elimination { background: var(--teal); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; margin-left: 6px; }
+.scoreboard .badge-nextup { background: var(--arc); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; margin-left: 6px; }
+.scoreboard td.avg { color: var(--teal); }
+
+/* Evidence rail */
+.evidence-rail {
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+  background: #f7f5f0;
+  border-radius: 10px;
+  padding: 16px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e8e4dd;
+}
+.evidence-rail h2 {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--ember);
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.evidence-rail .ev-sub {
+  font-size: 11px;
+  color: var(--gray);
+  font-style: italic;
+  margin-bottom: 14px;
+}
+.evidence-list {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+.evidence-list::-webkit-scrollbar { width: 6px; }
+.evidence-list::-webkit-scrollbar-thumb { background: #c8c4bc; border-radius: 3px; }
+
+.ev-item {
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 12px;
+  border-left: 3px solid transparent;
+  border-top: 1px solid #e8e4dd;
+  border-right: 1px solid #e8e4dd;
+  border-bottom: 1px solid #e8e4dd;
+}
+.ev-item.yes { border-left-color: var(--teal); }
+.ev-item.no  { border-left-color: var(--ember); }
+.ev-item.guess-correct { border-left-color: var(--yellow); }
+.ev-item.guess-wrong { border-left-color: #b33a3a; }
+.ev-item .ev-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+.ev-item .ev-top .team { color: var(--steel); font-weight: 600; }
+.ev-item .ev-top .elim { color: var(--ember); font-weight: 700; }
+.ev-item .ev-q { color: var(--steel); font-style: italic; }
+.ev-item .ev-a {
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  margin-left: 6px;
+}
+.ev-item.yes .ev-a { background: var(--teal); color: white; }
+.ev-item.no .ev-a { background: var(--ember); color: white; }
+.ev-empty { text-align: center; color: var(--gray); font-style: italic; font-size: 11px; padding: 20px 10px; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--teal);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  z-index: 1000;
+  animation: toast-in 0.3s;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Stats */
+.stats-row { display: flex; gap: 12px; margin-bottom: 20px; }
+.stat {
+  flex: 1;
+  background: #f7f5f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  border-left: 4px solid var(--teal);
+  border-top: 1px solid #e8e4dd;
+  border-right: 1px solid #e8e4dd;
+  border-bottom: 1px solid #e8e4dd;
+}
+.stat .label { font-size: 10px; letter-spacing: 0.2em; color: var(--gray); font-weight: 700; }
+.stat .value { font-size: 32px; font-weight: 800; margin-top: 4px; line-height: 1; }
+.stat .sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
+.stat.alive { border-left-color: var(--teal); }
+.stat.elim { border-left-color: var(--ember); }
+
+/* Controls row */
+.controls-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<div class="main-layout">
+<div class="wrap">
+
+<div class="header">
+  <div>
+    <div class="brand">SPARKWORKS · EMBER</div>
+    <div class="title">Find The Alien</div>
+    <div class="subtitle">Ask good questions. Eliminate the impossible.</div>
+  </div>
+  <div class="count">
+    ALIENS<b id="candidates-alive">24</b>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="setup">Setup</button>
+  <button class="tab" data-tab="play">Play</button>
+</div>
+
+<!-- ============================================================
+     SETUP TAB
+     ============================================================ -->
+<div class="tab-pane active" id="tab-setup">
+
+  <div class="panel">
+    <h2><span class="step-num">1</span>Pick the secret alien</h2>
+    <p style="color: var(--gray); margin: 0 0 16px; font-size: 13px;">
+      Click one of the 24 aliens below. It will be the secret alien for this game.
+      The kids won't see which one you picked.
+    </p>
+    <div class="alien-grid" id="setup-grid"></div>
+    <div class="controls-row">
+      <button class="btn outline" id="btn-reshuffle">🔀 Different aliens</button>
+      <button class="btn outline" id="btn-random-secret">🎲 Pick for me</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="step-num">2</span>Add teams</h2>
+    <div class="form-group">
+      <label>New team name</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="new-team-input" placeholder="e.g., Maya & Priya">
+        <button class="btn" id="btn-add-team">Add team</button>
+      </div>
+    </div>
+    <div class="team-order-header" id="team-order-header">
+      <div class="hint">Teams play in this order. Use ↑ ↓ to reorder.</div>
+      <button class="btn secondary" id="btn-shuffle-teams">🎲 Shuffle order</button>
+    </div>
+    <div id="team-list" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="step-num">3</span>Start the game</h2>
+    <p style="color: var(--gray); font-size: 13px; margin: 0 0 14px;">
+      When ready, start the game. The secret alien will be hidden from view.
+    </p>
+    <button class="btn big" id="btn-start">▶ Start Game</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PLAY TAB
+     ============================================================ -->
+<div class="tab-pane" id="tab-play">
+
+  <div class="secret-display">
+    <div>
+      <div class="label">SECRET ALIEN</div>
+      <div class="value" id="secret-value"><span class="hidden">(hidden)</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div id="secret-mini-wrap"></div>
+    <button class="btn outline" id="btn-show-hide" style="margin-left: 14px;">👁 Show alien</button>
+  </div>
+
+  <div class="play-split">
+    <!-- LEFT: persistent alien grid -->
+    <div class="play-grid-col">
+      <div class="panel" id="play-grid-panel">
+        <h2 id="play-grid-title">Alien Field</h2>
+        <div class="alien-grid" id="play-grid"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: controls, turn info, scoreboard -->
+    <div class="play-controls-col">
+
+      <div class="stats-row" style="margin: 0;">
+        <div class="stat alive">
+          <div class="label">ALIVE</div>
+          <div class="value" id="stat-alive">24</div>
+          <div class="sub">of 24</div>
+        </div>
+        <div class="stat elim">
+          <div class="label">QUESTIONS</div>
+          <div class="value" id="stat-questions">0</div>
+        </div>
+      </div>
+
+      <div class="turn-banner" id="turn-banner" style="display: none; margin-bottom: 0;">
+        <div class="turn-num" id="turn-num">TURN 1</div>
+        <div class="team-name" id="turn-team">—</div>
+      </div>
+
+      <div class="panel" id="panel-team">
+        <h2><span class="step-num">1</span>Whose turn?</h2>
+        <div class="form-group" style="margin-bottom: 0;">
+          <select id="active-team"></select>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-action" style="display: none;">
+        <h2><span class="step-num">2</span>Ask a question</h2>
+        <p style="color: var(--gray); margin: 0 0 14px; font-size: 12px; font-style: italic;">
+          Keep asking until one alien is left — that's the winner. No guessing.
+        </p>
+        <div class="controls-row">
+          <button class="btn big teal" id="btn-ask-mode">❓ Ask a question</button>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-ask" style="display: none;">
+        <h2><span class="step-num">3</span>Pick the question</h2>
+        <label class="preview-toggle" for="preview-toggle">
+          <input type="checkbox" id="preview-toggle" checked>
+          <span class="preview-toggle-label">HIGHLIGHT MATCHING ALIENS</span>
+          <span class="preview-toggle-hint">turn off for harder play</span>
+        </label>
+        <div class="form-group">
+          <label>Search <span id="question-match-count" style="color: var(--gray); font-weight: 400; margin-left: 6px; font-size: 11px;"></span></label>
+          <input type="text" id="question-search" placeholder="e.g., 'eyes', 'horns', 'stripes'…"
+                 oninput="if(typeof renderQuestionOptions==='function')renderQuestionOptions()">
+        </div>
+        <div class="form-group">
+          <label id="ask-select-label">The team asks:</label>
+          <select id="question-select" size="8"></select>
+        </div>
+        <div id="split-preview" class="split-preview" style="display: none;">
+          <div class="split-preview-header">
+            <span class="split-preview-title">If the answer is…</span>
+            <span class="split-preview-quality" id="split-preview-quality"></span>
+          </div>
+          <div class="split-preview-row">
+            <div class="split-preview-cell yes">
+              <div class="split-preview-label">YES</div>
+              <div class="split-preview-stats">
+                <span class="split-preview-big" id="split-yes-elim">0</span>
+                <span class="split-preview-small">eliminated</span>
+              </div>
+              <div class="split-preview-stats">
+                <span class="split-preview-big" id="split-yes-left">0</span>
+                <span class="split-preview-small">left alive</span>
+              </div>
+            </div>
+            <div class="split-preview-cell no">
+              <div class="split-preview-label">NO</div>
+              <div class="split-preview-stats">
+                <span class="split-preview-big" id="split-no-elim">0</span>
+                <span class="split-preview-small">eliminated</span>
+              </div>
+              <div class="split-preview-stats">
+                <span class="split-preview-big" id="split-no-left">0</span>
+                <span class="split-preview-small">left alive</span>
+              </div>
+            </div>
+          </div>
+          <div class="split-preview-bar">
+            <div class="split-preview-bar-yes" id="split-bar-yes"></div>
+            <div class="split-preview-bar-no" id="split-bar-no"></div>
+          </div>
+        </div>
+        <div class="controls-row">
+          <button class="btn" id="btn-reveal-answer">▶ Reveal</button>
+          <button class="btn outline" id="btn-cancel-ask">← Back</button>
+        </div>
+      </div>
+
+      <div id="reveal-container"></div>
+
+      <div class="panel" id="panel-between-rounds" style="display: none;">
+        <h2 id="between-rounds-title">Round complete</h2>
+        <p style="color: var(--gray); margin: 0 0 16px; font-size: 13px;" id="between-rounds-sub">
+          The next team will start Round 2.
+        </p>
+        <div class="controls-row">
+          <button class="btn big teal" id="btn-next-round">▶ Start next round</button>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-match-done" style="display: none;">
+        <h2 id="match-done-title">★ Match complete</h2>
+        <p style="color: var(--gray); margin: 0 0 16px; font-size: 13px;" id="match-done-sub">
+          Final standings are shown in the scoreboard below.
+        </p>
+        <div class="controls-row">
+          <button class="btn big" id="btn-end-match">End match</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Scoreboard</h2>
+        <table class="scoreboard">
+          <thead>
+            <tr><th>TEAM</th><th>TURNS</th><th>ELIM</th><th>WINS</th></tr>
+          </thead>
+          <tbody id="scoreboard-body"></tbody>
+        </table>
+      </div>
+
+      <div class="panel" style="display: flex; flex-direction: column; min-height: 0; max-height: 360px;">
+        <h2 style="flex-shrink: 0;">Evidence</h2>
+        <div class="evidence-list" id="evidence-list">
+          <div class="ev-empty">No questions yet</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Game controls</h2>
+        <div class="controls-row">
+          <button class="btn outline" id="btn-undo">↶ Undo</button>
+          <button class="btn outline" id="btn-new-game-keep">🔄 New game</button>
+          <button class="btn danger" id="btn-new-game-wipe">⚠ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+// ============================================================
+// ALIEN POOL — 39 hand-illustrated aliens, embedded as base64 PNGs
+// Each alien has attributes tagged from its actual appearance.
+// ============================================================
+const EMBEDDED_ALIENS = [{"num": 1, "name": "Zorp", "color": "purple", "eyes": 6, "heads": 2, "horns": 4, "antennae": false, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/01_Zorp.png"}, {"num": 2, "name": "Blix", "color": "orange", "eyes": 2, "heads": 1, "horns": 0, "antennae": true, "tail": true, "stripes": true, "spots": false, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/02_Blix.png"}, {"num": 3, "name": "Grom", "color": "teal", "eyes": 2, "heads": 2, "horns": 2, "antennae": false, "tail": true, "stripes": true, "spots": false, "smile": true, "fangs": true, "bodyShape": "tall", "img": "aliens/03_Grom.png"}, {"num": 4, "name": "Kex", "color": "purple", "eyes": 1, "heads": 1, "horns": 1, "antennae": true, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": false, "bodyShape": "square", "img": "aliens/04_Kex.png"}, {"num": 5, "name": "Voob", "color": "teal", "eyes": 6, "heads": 2, "horns": 2, "antennae": true, "tail": false, "stripes": false, "spots": false, "smile": true, "fangs": true, "bodyShape": "tall", "img": "aliens/05_Voob.png"}, {"num": 6, "name": "Nix", "color": "orange", "eyes": 2, "heads": 1, "horns": 0, "antennae": true, "tail": true, "stripes": true, "spots": true, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/06_Nix.png"}, {"num": 7, "name": "Plim", "color": "purple", "eyes": 1, "heads": 1, "horns": 2, "antennae": false, "tail": false, "stripes": true, "spots": true, "smile": false, "fangs": false, "bodyShape": "square", "img": "aliens/07_Plim.png"}, {"num": 8, "name": "Zorb", "color": "orange", "eyes": 4, "heads": 2, "horns": 0, "antennae": false, "tail": true, "stripes": false, "spots": false, "smile": true, "fangs": false, "bodyShape": "tall", "img": "aliens/08_Zorb.png"}, {"num": 9, "name": "Trax", "color": "teal", "eyes": 2, "heads": 1, "horns": 1, "antennae": false, "tail": true, "stripes": true, "spots": false, "smile": true, "fangs": true, "bodyShape": "round", "img": "aliens/09_Trax.png"}, {"num": 10, "name": "Flop", "color": "orange", "eyes": 6, "heads": 2, "horns": 2, "antennae": true, "tail": false, "stripes": true, "spots": true, "smile": true, "fangs": false, "bodyShape": "tall", "img": "aliens/10_Flop.png"}, {"num": 11, "name": "Glub", "color": "purple", "eyes": 4, "heads": 2, "horns": 0, "antennae": false, "tail": false, "stripes": false, "spots": false, "smile": true, "fangs": true, "bodyShape": "tall", "img": "aliens/11_Glub.png"}, {"num": 12, "name": "Spin", "color": "teal", "eyes": 1, "heads": 1, "horns": 2, "antennae": true, "tail": true, "stripes": true, "spots": true, "smile": false, "fangs": false, "bodyShape": "square", "img": "aliens/12_Spin.png"}, {"num": 13, "name": "Kip", "color": "teal", "eyes": 3, "heads": 1, "horns": 0, "antennae": false, "tail": true, "stripes": true, "spots": false, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/13_Kip.png"}, {"num": 14, "name": "Rex", "color": "orange", "eyes": 2, "heads": 2, "horns": 2, "antennae": true, "tail": false, "stripes": true, "spots": true, "smile": false, "fangs": false, "bodyShape": "tall", "img": "aliens/14_Rex.png"}, {"num": 15, "name": "Wobb", "color": "purple", "eyes": 4, "heads": 2, "horns": 1, "antennae": false, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": true, "bodyShape": "tall", "img": "aliens/15_Wobb.png"}, {"num": 16, "name": "Pilt", "color": "purple", "eyes": 2, "heads": 1, "horns": 1, "antennae": true, "tail": true, "stripes": true, "spots": false, "smile": true, "fangs": false, "bodyShape": "square", "img": "aliens/16_Pilt.png"}, {"num": 17, "name": "Moxy", "color": "teal", "eyes": 1, "heads": 1, "horns": 0, "antennae": true, "tail": false, "stripes": true, "spots": true, "smile": true, "fangs": false, "bodyShape": "tall", "img": "aliens/17_Moxy.png"}, {"num": 18, "name": "Dax", "color": "orange", "eyes": 4, "heads": 2, "horns": 4, "antennae": false, "tail": true, "stripes": false, "spots": true, "smile": true, "fangs": true, "bodyShape": "round", "img": "aliens/18_Dax.png"}, {"num": 19, "name": "Trig", "color": "teal", "eyes": 2, "heads": 1, "horns": 0, "antennae": false, "tail": true, "stripes": false, "spots": false, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/19_Trig.png"}, {"num": 20, "name": "Quex", "color": "purple", "eyes": 6, "heads": 2, "horns": 2, "antennae": true, "tail": false, "stripes": true, "spots": false, "smile": true, "fangs": true, "bodyShape": "tall", "img": "aliens/20_quex.png"}, {"num": 21, "name": "Zeep", "color": "orange", "eyes": 2, "heads": 2, "horns": 3, "antennae": false, "tail": true, "stripes": false, "spots": false, "smile": false, "fangs": true, "bodyShape": "round", "img": "aliens/21_zeep.png"}, {"num": 22, "name": "Vex", "color": "purple", "eyes": 1, "heads": 1, "horns": 2, "antennae": true, "tail": false, "stripes": true, "spots": true, "smile": true, "fangs": false, "bodyShape": "square", "img": "aliens/22_vex.png"}, {"num": 23, "name": "Thom", "color": "orange", "eyes": 3, "heads": 1, "horns": 0, "antennae": true, "tail": true, "stripes": false, "spots": false, "smile": true, "fangs": true, "bodyShape": "round", "img": "aliens/23_thom.png"}, {"num": 24, "name": "Gaz", "color": "teal", "eyes": 4, "heads": 2, "horns": 0, "antennae": false, "tail": false, "stripes": true, "spots": true, "smile": false, "fangs": false, "bodyShape": "tall", "img": "aliens/24_gaz.png"}, {"num": 25, "name": "Lurb", "color": "orange", "eyes": 1, "heads": 1, "horns": 1, "antennae": false, "tail": false, "stripes": true, "spots": false, "smile": true, "fangs": false, "bodyShape": "tall", "img": "aliens/25_lurb.png"}, {"num": 26, "name": "Snix", "color": "purple", "eyes": 4, "heads": 2, "horns": 2, "antennae": true, "tail": true, "stripes": false, "spots": true, "smile": true, "fangs": true, "bodyShape": "round", "img": "aliens/26_snix.png"}, {"num": 27, "name": "Broz", "color": "teal", "eyes": 3, "heads": 1, "horns": 2, "antennae": true, "tail": true, "stripes": true, "spots": false, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/27_broz.png"}, {"num": 28, "name": "Fip", "color": "teal", "eyes": 2, "heads": 2, "horns": 2, "antennae": false, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": false, "bodyShape": "square", "img": "aliens/28_fip.png"}, {"num": 29, "name": "Klax", "color": "orange", "eyes": 3, "heads": 1, "horns": 0, "antennae": false, "tail": true, "stripes": false, "spots": true, "smile": false, "fangs": false, "bodyShape": "tall", "img": "aliens/29_klax.png"}, {"num": 31, "name": "Zim", "color": "orange", "eyes": 2, "heads": 1, "horns": 1, "antennae": false, "tail": true, "stripes": false, "spots": true, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/31_zim.png"}, {"num": 32, "name": "Plonk", "color": "purple", "eyes": 2, "heads": 1, "horns": 0, "antennae": true, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": true, "bodyShape": "round", "img": "aliens/32_Plonk.png"}, {"num": 33, "name": "Grix", "color": "teal", "eyes": 2, "heads": 2, "horns": 2, "antennae": true, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": true, "bodyShape": "tall", "img": "aliens/33_Grix.png"}, {"num": 34, "name": "Blort", "color": "orange", "eyes": 2, "heads": 1, "horns": 2, "antennae": false, "tail": true, "stripes": false, "spots": true, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/34_Blort.png"}, {"num": 35, "name": "Gorp", "color": "orange", "eyes": 2, "heads": 2, "horns": 3, "antennae": false, "tail": true, "stripes": false, "spots": false, "smile": true, "fangs": false, "bodyShape": "round", "img": "aliens/35_Gorp.png"}, {"num": 36, "name": "Mibble", "color": "orange", "eyes": 2, "heads": 1, "horns": 2, "antennae": false, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": false, "bodyShape": "tall", "img": "aliens/36_Mibble.png"}, {"num": 37, "name": "Plorp", "color": "teal", "eyes": 6, "heads": 2, "horns": 0, "antennae": true, "tail": true, "stripes": true, "spots": true, "smile": true, "fangs": true, "bodyShape": "round", "img": "aliens/37_Plorp.png"}, {"num": 38, "name": "Umbo", "color": "purple", "eyes": 2, "heads": 1, "horns": 1, "antennae": false, "tail": false, "stripes": true, "spots": true, "smile": false, "fangs": false, "bodyShape": "tall", "img": "aliens/38_Umbo.png"}, {"num": 39, "name": "Vurn", "color": "purple", "eyes": 1, "heads": 1, "horns": 2, "antennae": false, "tail": false, "stripes": true, "spots": true, "smile": false, "fangs": false, "bodyShape": "tall", "img": "aliens/39_Vurn.png"}, {"num": 48, "name": "Zok", "color": "orange", "eyes": 2, "heads": 1, "horns": 2, "antennae": true, "tail": false, "stripes": false, "spots": true, "smile": true, "fangs": true, "bodyShape": "round", "img": "aliens/48_zok.png"}];
+
+// Image-based renderer. Images live in the aliens/ subfolder as separate PNG files.
+function getAlienImageUrl(name) {
+  const src = EMBEDDED_ALIENS.find(a => a.name === name);
+  if (!src || !src.img) return null;
+  return src.img;
+}
+
+function renderAlien(attrs) {
+  if (!attrs) return '';
+  const url = getAlienImageUrl(attrs.name);
+  if (!url) {
+    return `<div style="padding:20px;text-align:center;color:#888;font-size:11px;">${attrs.name || '?'}</div>`;
+  }
+  return `<img src="${url}" alt="${attrs.name || ''}" style="width:100%;height:100%;object-fit:contain;display:block;" draggable="false" loading="lazy">`;
+}
+
+function generateAlienPool() {
+  // Return the embedded 39 aliens as the pool.
+  // Strip the `img` field from each — it lives in EMBEDDED_ALIENS and the renderer will look it up.
+  return EMBEDDED_ALIENS.map(a => {
+    const { img, ...rest } = a;
+    return rest;
+  });
+}
+
+// Sample 24 from a pool
+function sampleAliens(pool, count = 24, seed = null) {
+  const arr = [...pool];
+  if (seed !== null) {
+    let s = seed;
+    for (let i = arr.length - 1; i > 0; i--) {
+      s = (s * 9301 + 49297) % 233280;
+      const j = Math.floor((s / 233280) * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  } else {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+  return arr.slice(0, count);
+}
+
+// ============================================================
+// QUESTION BANK — auto-generated from attribute set
+// ============================================================
+// IMPORTANT: eyes and horns count TOTAL across all heads.
+// A two-headed alien with 1 eye per head has 2 eyes total.
+// This matches what kids literally count on the screen.
+// IMPORTANT: eyes and horns values in alien data are ALREADY totals
+// (as entered by the Sparkmaster via the tagger). No multiplication needed.
+function totalEyes(a)  { return a.eyes; }
+function totalHorns(a) { return a.horns; }
+
+function buildQuestionBank() {
+  const Q = [];
+  // EYES — count total visible eyes
+  Q.push({ id: 'eyes_1', text: 'Does it have exactly 1 eye?',  check: a => totalEyes(a) === 1 });
+  Q.push({ id: 'eyes_2', text: 'Does it have exactly 2 eyes?', check: a => totalEyes(a) === 2 });
+  Q.push({ id: 'eyes_3', text: 'Does it have exactly 3 eyes?', check: a => totalEyes(a) === 3 });
+  Q.push({ id: 'eyes_4plus', text: 'Does it have 4 or more eyes?', check: a => totalEyes(a) >= 4 });
+
+  // HEADS — unambiguous; you can literally count heads
+  Q.push({ id: 'heads_2', text: 'Does it have 2 heads?', check: a => a.heads === 2 });
+
+  // HORNS — count total visible horns
+  Q.push({ id: 'horns_any',   text: 'Does it have any horns?',         check: a => totalHorns(a) >= 1 });
+  Q.push({ id: 'horns_2',     text: 'Does it have exactly 2 horns?',   check: a => totalHorns(a) === 2 });
+  Q.push({ id: 'horns_3plus', text: 'Does it have 3 or more horns?',   check: a => totalHorns(a) >= 3 });
+
+  // COLOR
+  Q.push({ id: 'color_teal',   text: 'Is it teal?',   check: a => a.color === 'teal' });
+  Q.push({ id: 'color_orange', text: 'Is it orange?', check: a => a.color === 'orange' });
+  Q.push({ id: 'color_purple', text: 'Is it purple?', check: a => a.color === 'purple' });
+
+  // FEATURES
+  Q.push({ id: 'antennae', text: 'Does it have antennae?', check: a => a.antennae });
+  Q.push({ id: 'tail',     text: 'Does it have a tail?',   check: a => a.tail });
+  Q.push({ id: 'stripes',  text: 'Does it have stripes?',  check: a => a.stripes });
+  Q.push({ id: 'spots',    text: 'Does it have spots?',    check: a => a.spots });
+
+  // MOUTH
+  Q.push({ id: 'mouth_smile', text: 'Is it smiling?',       check: a => a.smile === true });
+  Q.push({ id: 'mouth_fangs', text: 'Does it have fangs?',  check: a => a.fangs === true });
+
+  // NAME — starts with letter (A–Z). Dead-letter questions auto-hide via the live-question filter.
+  for (let i = 0; i < 26; i++) {
+    const letter = String.fromCharCode(65 + i); // A..Z
+    Q.push({
+      id: 'name_starts_' + letter,
+      text: `Does its name start with ${letter}?`,
+      check: a => a.name && a.name[0].toUpperCase() === letter
+    });
+  }
+
+  // NAME — contains letter (A–Z). Same auto-hide behavior for letters absent from all names.
+  for (let i = 0; i < 26; i++) {
+    const letter = String.fromCharCode(65 + i);
+    Q.push({
+      id: 'name_contains_' + letter,
+      text: `Does its name contain the letter ${letter}?`,
+      check: a => a.name && a.name.toUpperCase().includes(letter)
+    });
+  }
+
+  // NAME — exact length (3..6 covers every current alien; extra bins stay dormant until needed)
+  for (let n = 3; n <= 8; n++) {
+    Q.push({
+      id: 'name_length_' + n,
+      text: `Does its name have exactly ${n} letters?`,
+      check: a => a.name && a.name.length === n
+    });
+  }
+
+  // NAME — length ranges (useful for cutting the pool in half quickly)
+  Q.push({ id: 'name_length_short', text: 'Is its name short (3 or 4 letters)?',  check: a => a.name && a.name.length <= 4 });
+  Q.push({ id: 'name_length_long',  text: 'Is its name long (5 or more letters)?', check: a => a.name && a.name.length >= 5 });
+
+  return Q;
+}
+const QUESTIONS = buildQuestionBank();
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const game = {
+  pool: [],                // Full 48 aliens
+  board: [],               // The 24 aliens on this game's board
+  boardSeed: null,         // Seed used for board sampling (for reshuffle)
+  secretAlien: null,       // The alien object that is the secret for this round
+  teams: [],               // [{id, name, elim, totalElim, totalTurns}] — elim = this round only
+  alive: new Set(),        // Set of alien names still alive this round
+  moves: [],               // Log for current round only — reset between rounds
+  started: false,
+  winner: null,            // team id that won the CURRENT ROUND (not the match)
+  pendingQuestion: null,   // question id currently being previewed
+  pendingReveal: null,     // the reveal state { type: 'ask'|'guess', ...data }
+  // --- Match state (rounds) ---
+  match: null,             // { round, totalRounds, startingOrder: [teamId...], roundWinners: [teamId|null...] }
+};
+
+// ============================================================
+// UTILS
+// ============================================================
+const qs = (s) => document.querySelector(s);
+const qsa = (s) => [...document.querySelectorAll(s)];
+
+function flashOk(text) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+function saveState() {
+  try {
+    const serial = {
+      // pool is NOT persisted — always rebuilt from EMBEDDED_ALIENS on load
+      board: game.board,
+      boardSeed: game.boardSeed,
+      secretAlien: game.secretAlien,
+      teams: game.teams,
+      alive: [...game.alive],
+      moves: game.moves,
+      started: game.started,
+      winner: game.winner,
+      match: game.match,
+    };
+    localStorage.setItem('findthealien:state', JSON.stringify(serial));
+  } catch (e) { console.warn('save failed', e); }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('findthealien:state');
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    // Always rebuild pool from embedded data
+    game.pool = generateAlienPool();
+    game.board = s.board || [];
+    game.boardSeed = s.boardSeed;
+    game.secretAlien = s.secretAlien;
+    game.teams = s.teams || [];
+    // Backfill totals for teams from older saves that didn't have them
+    for (const t of game.teams) {
+      if (typeof t.totalElim !== 'number') t.totalElim = 0;
+      if (typeof t.totalTurns !== 'number') t.totalTurns = 0;
+      if (typeof t.elim !== 'number') t.elim = 0;
+    }
+    game.alive = new Set(s.alive || []);
+    game.moves = s.moves || [];
+    game.started = !!s.started;
+    game.winner = s.winner;
+    game.match = s.match || null;
+    return true;
+  } catch (e) {
+    console.warn('load failed', e);
+    return false;
+  }
+}
+
+// ============================================================
+// SETUP GRID
+// ============================================================
+function renderSetupGrid() {
+  const g = qs('#setup-grid');
+  g.innerHTML = '';
+  for (const alien of game.board) {
+    const card = document.createElement('div');
+    card.className = 'alien-card';
+    if (game.secretAlien && game.secretAlien.name === alien.name) card.classList.add('secret-pick');
+    card.innerHTML = `<div class="alien-svg-wrap">${renderAlien(alien)}</div><div class="alien-name">${alien.name}</div>`;
+    card.addEventListener('click', () => {
+      game.secretAlien = alien;
+      renderSetupGrid();
+      flashOk(`Secret alien: ${alien.name}`);
+      saveState();
+    });
+    g.appendChild(card);
+  }
+}
+
+// ============================================================
+// TEAMS
+// ============================================================
+function renderTeamList() {
+  const list = qs('#team-list');
+  const header = qs('#team-order-header');
+  list.innerHTML = '';
+  if (header) header.classList.toggle('show', game.teams.length >= 2);
+  game.teams.forEach((team, i) => {
+    const row = document.createElement('div');
+    row.className = 'team-row';
+    const isFirst = i === 0;
+    const isLast = i === game.teams.length - 1;
+    row.innerHTML = `
+      <div class="team-idx">#${i+1}</div>
+      <input type="text" value="${team.name.replace(/"/g, '&quot;')}" data-team-id="${team.id}">
+      <button class="move-btn" data-move-up="${team.id}" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
+      <button class="move-btn" data-move-down="${team.id}" ${isLast ? 'disabled' : ''} title="Move down">↓</button>
+      <button class="remove-btn" data-remove-id="${team.id}">×</button>
+    `;
+    list.appendChild(row);
+  });
+  qsa('#team-list input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const id = e.target.dataset.teamId;
+      const t = game.teams.find(x => x.id === id);
+      if (t) { t.name = e.target.value || `Team ${game.teams.indexOf(t)+1}`; saveState(); renderActiveTeamSelect(); renderScoreboard(); }
+    });
+  });
+  qsa('#team-list [data-move-up]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = e.currentTarget.dataset.moveUp;
+      const idx = game.teams.findIndex(t => t.id === id);
+      if (idx > 0) {
+        [game.teams[idx-1], game.teams[idx]] = [game.teams[idx], game.teams[idx-1]];
+        renderTeamList();
+        renderActiveTeamSelect();
+        renderScoreboard();
+        saveState();
+      }
+    });
+  });
+  qsa('#team-list [data-move-down]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = e.currentTarget.dataset.moveDown;
+      const idx = game.teams.findIndex(t => t.id === id);
+      if (idx >= 0 && idx < game.teams.length - 1) {
+        [game.teams[idx], game.teams[idx+1]] = [game.teams[idx+1], game.teams[idx]];
+        renderTeamList();
+        renderActiveTeamSelect();
+        renderScoreboard();
+        saveState();
+      }
+    });
+  });
+  qsa('#team-list .remove-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = e.target.dataset.removeId;
+      game.teams = game.teams.filter(x => x.id !== id);
+      renderTeamList();
+      renderActiveTeamSelect();
+      renderScoreboard();
+      saveState();
+    });
+  });
+}
+
+function shuffleTeams() {
+  // Fisher-Yates shuffle
+  for (let i = game.teams.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [game.teams[i], game.teams[j]] = [game.teams[j], game.teams[i]];
+  }
+  renderTeamList();
+  renderActiveTeamSelect();
+  renderScoreboard();
+  saveState();
+  flashOk('🎲 Teams shuffled');
+}
+
+function addTeam() {
+  const input = qs('#new-team-input');
+  const typedName = input ? input.value.trim() : '';
+  const idx = game.teams.length + 1;
+  const name = typedName || `Team ${idx}`;
+  game.teams.push({
+    id: 'team_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    name,
+    elim: 0,
+    totalElim: 0,
+    totalTurns: 0,
+  });
+  if (input) { input.value = ''; input.focus(); }
+  renderTeamList();
+  renderActiveTeamSelect();
+  saveState();
+}
+
+function renderActiveTeamSelect() {
+  const sel = qs('#active-team');
+  const current = sel.value;
+  sel.innerHTML = '';
+  game.teams.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.id; o.textContent = t.name;
+    sel.appendChild(o);
+  });
+  if (current && game.teams.some(t => t.id === current)) sel.value = current;
+}
+
+// ============================================================
+// PLAY FLOW
+// ============================================================
+function startGame() {
+  if (!game.secretAlien) { flashOk('⚠ Pick a secret alien first'); return; }
+  if (game.teams.length === 0) { flashOk('⚠ Add at least one team'); return; }
+  game.started = true;
+  game.alive = new Set(game.board.map(a => a.name));
+  game.moves = [];
+  game.winner = null;
+  // Reset per-round state; zero out cumulative too since this is a fresh match
+  for (const t of game.teams) {
+    t.elim = 0;
+    t.totalElim = 0;
+    t.totalTurns = 0;
+  }
+  // Initialize match: one round per team, starting order locked in now.
+  game.match = {
+    round: 1,
+    totalRounds: game.teams.length,
+    startingOrder: game.teams.map(t => t.id),
+    roundWinners: [],
+  };
+  // Reset active team to the FIRST team in the current play order.
+  // Without this, a stale selection from a prior game (e.g. whoever ended
+  // last game's final turn) would carry over, even if you've reordered teams.
+  const sel = qs('#active-team');
+  if (sel && game.teams.length > 0) sel.value = game.teams[0].id;
+  saveState();
+  switchTab('play');
+  renderAll();
+  flashOk(`▶ Match started! Round 1 of ${game.match.totalRounds}`);
+}
+
+function currentTeam() {
+  const id = qs('#active-team').value;
+  return game.teams.find(t => t.id === id);
+}
+
+function switchTab(name) {
+  qsa('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  qsa('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
+}
+
+let currentPlayMode = 'idle';
+
+function setPlayMode(mode) {
+  // Modes: 'idle'           - team picker + ask button
+  //        'asking'          - question picker
+  //        'reveal'          - answer/win reveal (buttons hidden)
+  //        'between-rounds'  - round over, cumulative scoreboard + "Start Round N+1"
+  //        'match-done'      - all rounds finished, final leaderboard
+  currentPlayMode = mode;
+  qs('#panel-team').style.display = (mode === 'idle') ? '' : 'none';
+  qs('#panel-action').style.display = (mode === 'idle') ? '' : 'none';
+  qs('#panel-ask').style.display = (mode === 'asking') ? '' : 'none';
+  qs('#panel-between-rounds').style.display = (mode === 'between-rounds') ? '' : 'none';
+  qs('#panel-match-done').style.display = (mode === 'match-done') ? '' : 'none';
+  // Re-render the play grid so it picks up the mode change (clickable or not)
+  renderPlayGrid();
+  // When entering asking mode, apply preview highlight for the currently-selected question.
+  // When leaving, clear any highlights.
+  if (mode === 'asking') {
+    renderQuestionPreview();
+  } else {
+    clearQuestionPreview();
+  }
+  // Populate the copy on the between-rounds / match-done panels
+  renderBetweenRoundsPanel();
+  renderMatchDonePanel();
+}
+
+function renderBetweenRoundsPanel() {
+  if (!game.match) return;
+  const title = qs('#between-rounds-title');
+  const sub = qs('#between-rounds-sub');
+  const btn = qs('#btn-next-round');
+  if (!title || !sub || !btn) return;
+  const justFinished = game.match.round;
+  const nextRound = game.match.round + 1;
+  const total = game.match.totalRounds;
+  const winnerTeam = game.teams.find(t => t.id === game.winner);
+  // The team that will START next round is the second team in the current
+  // order, because startNextRound() rotates by 1.
+  const nextStarter = game.teams.length > 1 ? game.teams[1] : game.teams[0];
+  title.textContent = `★ Round ${justFinished} complete`;
+  sub.innerHTML = winnerTeam
+    ? `<b>${winnerTeam.name}</b> found the alien by elimination. <b>${nextStarter ? nextStarter.name : '—'}</b> starts Round ${nextRound}.`
+    : `<b>${nextStarter ? nextStarter.name : '—'}</b> starts Round ${nextRound}.`;
+  btn.textContent = `▶ Start Round ${nextRound} of ${total}`;
+}
+
+function renderMatchDonePanel() {
+  if (!game.match) return;
+  const title = qs('#match-done-title');
+  const sub = qs('#match-done-sub');
+  if (!title || !sub) return;
+  // Find overall winner by totalElim (ties broken by fewer totalTurns)
+  const ranked = [...game.teams].sort((a, b) => {
+    if (b.totalElim !== a.totalElim) return b.totalElim - a.totalElim;
+    return a.totalTurns - b.totalTurns;
+  });
+  const top = ranked[0];
+  title.textContent = `★ Match complete — ${top ? top.name : '—'} wins!`;
+  sub.innerHTML = top
+    ? `<b>${top.name}</b> eliminated <b>${top.totalElim}</b> aliens across ${game.match.totalRounds} rounds. Final standings below.`
+    : 'Final standings below.';
+}
+
+// --- Question preview highlighting ---
+// When the "Highlight matching aliens" toggle is ON, clicking (or arrow-keying through)
+// a question highlights every alive alien that would answer YES to it.
+// Stored in localStorage so the toggle state persists across refreshes.
+function isPreviewOn() {
+  const el = qs('#preview-toggle');
+  return el ? el.checked : true;
+}
+
+function clearQuestionPreview() {
+  qsa('.alien-card.preview-match').forEach(el => el.classList.remove('preview-match'));
+  // Also hide the split preview panel
+  const sp = qs('#split-preview');
+  if (sp) sp.style.display = 'none';
+}
+
+function renderQuestionPreview() {
+  clearQuestionPreview();
+  if (!isPreviewOn()) return;
+  if (currentPlayMode !== 'asking') return;
+  const qid = qs('#question-select').value;
+  if (!qid) return;
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (!q) return;
+
+  // Count YES matches among currently alive aliens + apply highlight class
+  let yesCount = 0;
+  const cards = qsa('#play-grid .alien-card');
+  game.board.forEach((alien, i) => {
+    if (!game.alive.has(alien.name)) return;
+    if (q.check(alien)) {
+      yesCount++;
+      cards[i] && cards[i].classList.add('preview-match');
+    }
+  });
+  const aliveCount = game.alive.size;
+  const noCount = aliveCount - yesCount;
+
+  // If answer is YES: aliens matching q.check survive, others eliminated.
+  // If answer is NO:  aliens NOT matching q.check survive, others eliminated.
+  const yesElim = noCount;
+  const yesLeft = yesCount;
+  const noElim = yesCount;
+  const noLeft = noCount;
+
+  // Update the split preview panel
+  const sp = qs('#split-preview');
+  if (!sp) return;
+  sp.style.display = '';
+  qs('#split-yes-elim').textContent = yesElim;
+  qs('#split-yes-left').textContent = yesLeft;
+  qs('#split-no-elim').textContent = noElim;
+  qs('#split-no-left').textContent = noLeft;
+
+  // Bar: width proportional to how many aliens each branch keeps alive
+  const yesPct = aliveCount > 0 ? (yesLeft / aliveCount) * 100 : 50;
+  const noPct = 100 - yesPct;
+  qs('#split-bar-yes').style.flexBasis = yesPct + '%';
+  qs('#split-bar-no').style.flexBasis = noPct + '%';
+
+  // Quality label: closer to 50/50 split = better question
+  const quality = qs('#split-preview-quality');
+  if (aliveCount < 2) {
+    quality.textContent = '';
+    quality.className = 'split-preview-quality';
+  } else {
+    const minBranch = Math.min(yesLeft, noLeft);
+    const minFrac = minBranch / aliveCount;
+    if (minBranch === 0) {
+      quality.textContent = '⚠ eliminates nothing';
+      quality.className = 'split-preview-quality bad';
+    } else if (minFrac >= 0.4) {
+      quality.textContent = '★ great split!';
+      quality.className = 'split-preview-quality good';
+    } else if (minFrac >= 0.2) {
+      quality.textContent = 'ok split';
+      quality.className = 'split-preview-quality okay';
+    } else {
+      quality.textContent = 'lopsided';
+      quality.className = 'split-preview-quality bad';
+    }
+  }
+}
+
+function renderQuestionOptions() {
+  const sel = qs('#question-select');
+  if (!sel) return;
+  sel.innerHTML = '';
+
+  // A question is "useful" if its answer would split the currently-alive aliens —
+  // i.e. there is at least one YES and at least one NO among living aliens.
+  // If the question would be unanimous, it eliminates zero and is dead.
+  const aliveAliens = game.board.filter(a => game.alive.has(a.name));
+  const liveQuestions = [];
+  const deadQuestions = [];
+  for (const q of QUESTIONS) {
+    if (aliveAliens.length === 0) { liveQuestions.push(q); continue; }
+    let yes = 0, no = 0;
+    for (const a of aliveAliens) {
+      if (q.check(a)) yes++; else no++;
+      if (yes > 0 && no > 0) break;  // short-circuit
+    }
+    if (yes > 0 && no > 0) liveQuestions.push(q);
+    else deadQuestions.push(q);
+  }
+
+  // Apply the user's search filter (if any) to the live questions.
+  // Each typed word must appear somewhere in the question text (case-insensitive).
+  const searchEl = qs('#question-search');
+  const searchRaw = searchEl ? (searchEl.value || '').toLowerCase().trim() : '';
+  const words = searchRaw.split(/\s+/).filter(w => w.length > 0);
+  const visibleQuestions = !words.length
+    ? liveQuestions
+    : liveQuestions.filter(q => {
+        const text = q.text.toLowerCase();
+        const id = q.id.toLowerCase();
+        return words.every(w => text.includes(w) || id.includes(w));
+      });
+
+  for (const q of visibleQuestions) {
+    const o = document.createElement('option');
+    o.value = q.id; o.textContent = q.text;
+    sel.appendChild(o);
+  }
+
+  // Update count indicators
+  // 1. The inline counter next to "Search" label
+  const searchCount = qs('#question-match-count');
+  if (searchCount) {
+    const totalLive = liveQuestions.length;
+    searchCount.textContent = searchRaw
+      ? `— showing ${visibleQuestions.length} of ${totalLive}`
+      : `— ${totalLive} useful question${totalLive === 1 ? '' : 's'}`;
+  }
+  // 2. The "X hidden" note next to "The team asks:" label
+  const askLabel = qs('#ask-select-label');
+  if (askLabel) {
+    const deadMsg = deadQuestions.length > 0
+      ? ` (${deadQuestions.length} would eliminate 0)`
+      : '';
+    askLabel.innerHTML = 'The team asks:<span style="color: var(--gray); font-weight: 400; margin-left: 8px; font-size: 11px;">' + deadMsg + '</span>';
+  }
+  // 3. Refresh the preview highlight — the selected question may have changed
+  // because we rebuilt the options list.
+  renderQuestionPreview();
+}
+
+function renderPlayGrid() {
+  const g = qs('#play-grid');
+  if (!g) return;
+  g.innerHTML = '';
+  for (const alien of game.board) {
+    const isAlive = game.alive.has(alien.name);
+    const card = document.createElement('div');
+    let cls = 'alien-card';
+    if (!isAlive) cls += ' eliminated';
+    else cls += ' disabled';  // visual-only, never clickable
+    card.className = cls;
+    card.innerHTML = `<div class="alien-svg-wrap">${renderAlien(alien)}</div><div class="alien-name">${alien.name}</div>`;
+    g.appendChild(card);
+  }
+  // Title stays as "Alien Field" — no more guess mode
+  const title = qs('#play-grid-title');
+  if (title) {
+    title.textContent = 'Alien Field';
+    title.style.color = '';
+  }
+  // Grid was just rebuilt — re-apply preview highlights if we're in asking mode.
+  renderQuestionPreview();
+}
+
+function commitAsk() {
+  const qid = qs('#question-select').value;
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (!q) return;
+  const team = currentTeam();
+  if (!team) return;
+
+  // Determine the truthful answer based on the secret alien
+  const answer = q.check(game.secretAlien);
+
+  // Count aliens eliminated: those in alive that would be FILTERED OUT by this answer
+  const before = game.alive.size;
+  const newAlive = new Set();
+  for (const alien of game.board) {
+    if (!game.alive.has(alien.name)) continue;
+    const matches = q.check(alien);
+    if (matches === answer) newAlive.add(alien.name);
+  }
+  const eliminated = before - newAlive.size;
+
+  // If this question narrows it down to exactly one alien, the team wins.
+  // No guessing — elimination is how the game ends.
+  const wonByElimination = (newAlive.size === 1);
+
+  // Record the move
+  const move = {
+    team: team.id,
+    teamName: team.name,
+    type: 'ask',
+    questionId: q.id,
+    questionText: q.text,
+    answer,
+    eliminated,
+    wonByElimination,
+  };
+  game.moves.push(move);
+  team.elim += eliminated;
+  game.alive = newAlive;
+  if (wonByElimination) {
+    game.winner = team.id;
+  }
+  game.pendingReveal = { ...move, kind: 'ask' };
+  saveState();
+  renderAll();
+  setPlayMode('reveal');
+}
+
+function commitGuess(alien) {
+  const team = currentTeam();
+  if (!team) return;
+  const correct = (alien.name === game.secretAlien.name);
+  const move = {
+    team: team.id,
+    teamName: team.name,
+    type: 'guess',
+    alienName: alien.name,
+    correct,
+    eliminated: correct ? 0 : 1,  // wrong guess eliminates the guessed alien
+  };
+  game.moves.push(move);
+  if (correct) {
+    game.winner = team.id;
+  } else {
+    team.elim += 1;
+    game.alive.delete(alien.name);
+  }
+  game.pendingReveal = { ...move, kind: 'guess' };
+  saveState();
+  renderAll();
+  setPlayMode('reveal');
+}
+
+function continueToNextTurn() {
+  game.pendingReveal = null;
+  saveState();
+  // If there's a round winner, go to the between-rounds screen — not idle.
+  if (game.winner) {
+    endRound();
+    return;
+  }
+  renderAll();
+  setPlayMode('idle');
+  // Auto-rotate active team to the next one
+  if (game.teams.length > 1) {
+    const sel = qs('#active-team');
+    const currentIdx = game.teams.findIndex(t => t.id === sel.value);
+    const nextIdx = (currentIdx + 1) % game.teams.length;
+    sel.value = game.teams[nextIdx].id;
+    renderTurnBanner();
+  }
+}
+
+// Called when a round ends (a team has won it by elimination).
+// Accumulates the round's turns + elims into each team's totals,
+// records the round winner, then shows the between-rounds screen
+// (or the match-done screen if that was the final round).
+function endRound() {
+  if (!game.match) {
+    // Legacy single-game mode — just show winner, no match flow
+    renderAll();
+    setPlayMode('idle');
+    return;
+  }
+  // Count turns this round from the moves log
+  const turnsPerTeam = {};
+  for (const t of game.teams) turnsPerTeam[t.id] = 0;
+  for (const m of game.moves) {
+    if (turnsPerTeam[m.team] !== undefined) turnsPerTeam[m.team]++;
+  }
+  // Accumulate into each team's totals
+  for (const t of game.teams) {
+    t.totalElim += t.elim;
+    t.totalTurns += turnsPerTeam[t.id] || 0;
+  }
+  // Zero out round-local counters NOW — otherwise the between-rounds
+  // scoreboard would double-count (displayElim = totalElim + t.elim when
+  // t.elim is still the just-folded-in number).
+  for (const t of game.teams) t.elim = 0;
+  game.moves = [];
+  // Record round winner
+  game.match.roundWinners.push(game.winner);
+  saveState();
+  // If that was the final round, match is done
+  if (game.match.round >= game.match.totalRounds) {
+    renderAll();
+    setPlayMode('match-done');
+    return;
+  }
+  renderAll();
+  setPlayMode('between-rounds');
+}
+
+// Called when the user clicks "Start Round N+1".
+// Rotates team order by 1, resets round-local state, picks a new secret,
+// and returns to the idle play screen.
+function startNextRound() {
+  if (!game.match) return;
+  // Rotate team order: first team goes to the back
+  const first = game.teams.shift();
+  game.teams.push(first);
+  // Reset round-local state (keep totals)
+  for (const t of game.teams) t.elim = 0;
+  game.moves = [];
+  game.winner = null;
+  game.pendingReveal = null;
+
+  // Partial board refresh: swap half the board (12 aliens) for fresh ones from the pool.
+  // Kept aliens stay in their current positions — creates visual continuity.
+  const swapCount = Math.min(12, game.board.length);
+  const boardSize = game.board.length;
+  // Pick swapCount random positions to replace
+  const positions = Array.from({length: boardSize}, (_, i) => i);
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+  const swapPositions = new Set(positions.slice(0, swapCount));
+  // Pool candidates = aliens NOT currently on the board
+  const onBoardNames = new Set(game.board.map(a => a.name));
+  const candidates = game.pool.filter(a => !onBoardNames.has(a.name));
+  // Shuffle candidates and take the first swapCount
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+  const replacements = candidates.slice(0, swapCount);
+  // Build the new board, replacing swap positions with new aliens
+  const newBoard = game.board.map((alien, i) => {
+    if (swapPositions.has(i)) {
+      return replacements.shift() || alien;  // fallback: keep old if pool runs dry
+    }
+    return alien;
+  });
+  game.board = newBoard;
+
+  // Reset alive set to match the new board
+  game.alive = new Set(game.board.map(a => a.name));
+
+  // New secret alien for this round — random pick from the new board
+  const idx = Math.floor(Math.random() * game.board.length);
+  game.secretAlien = game.board[idx];
+  // Advance round counter
+  game.match.round++;
+  // Active team = first team in rotated order
+  const sel = qs('#active-team');
+  if (sel && game.teams.length > 0) sel.value = game.teams[0].id;
+  saveState();
+  renderAll();
+  setPlayMode('idle');
+  flashOk(`▶ Round ${game.match.round} of ${game.match.totalRounds} — board refreshed`);
+}
+
+// Called when the match is fully done and the user clicks the final "End match" button.
+// Leaves state intact so the final scoreboard stays visible; user must Reset manually to play again.
+function endMatch() {
+  // Nothing to do — match-done state stays on screen
+  flashOk('Match complete. Reset everything to start a new match.');
+}
+
+function undoLastMove() {
+  if (!game.moves.length) { flashOk('Nothing to undo'); return; }
+  // Once a round ends (between-rounds or match-done), totals have been folded in
+  // and you can't undo across that boundary. Force user to continue the match.
+  if (currentPlayMode === 'between-rounds' || currentPlayMode === 'match-done') {
+    flashOk('⚠ Cannot undo across rounds');
+    return;
+  }
+  const last = game.moves.pop();
+  // Rebuild alive + team elim from scratch
+  game.alive = new Set(game.board.map(a => a.name));
+  for (const t of game.teams) t.elim = 0;
+  game.winner = null;
+  for (const m of game.moves) {
+    const t = game.teams.find(x => x.id === m.team);
+    if (m.type === 'ask') {
+      const q = QUESTIONS.find(x => x.id === m.questionId);
+      if (!q) continue;
+      const newAlive = new Set();
+      for (const alien of game.board) {
+        if (!game.alive.has(alien.name)) continue;
+        if (q.check(alien) === m.answer) newAlive.add(alien.name);
+      }
+      if (t) t.elim += game.alive.size - newAlive.size;
+      game.alive = newAlive;
+    } else if (m.type === 'guess') {
+      if (m.correct) game.winner = m.team;
+      else { game.alive.delete(m.alienName); if (t) t.elim += 1; }
+    }
+  }
+  game.pendingReveal = null;
+  saveState();
+  renderAll();
+  setPlayMode('idle');
+  flashOk('↶ Undid last move');
+}
+
+function newGame(keepTeams) {
+  if (!keepTeams) {
+    game.teams = [];
+    // Rebuild board with a fresh sample
+    game.boardSeed = Date.now();
+    game.board = sampleAliens(game.pool, 24, game.boardSeed);
+  } else {
+    // Keep teams and board, just reset play state
+  }
+  game.secretAlien = null;
+  game.alive = new Set(game.board.map(a => a.name));
+  game.moves = [];
+  game.started = false;
+  game.winner = null;
+  game.pendingReveal = null;
+  game.match = null;
+  for (const t of game.teams) {
+    t.elim = 0;
+    t.totalElim = 0;
+    t.totalTurns = 0;
+  }
+  saveState();
+  renderAll();
+  switchTab('setup');
+  renderSetupGrid();
+  renderTeamList();
+  // Reset play-tab panels to their default visibility. Without this, a stale
+  // match-done or between-rounds panel from a previous match would still be
+  // visible when the user starts a new game and lands on the Play tab.
+  setPlayMode('idle');
+  flashOk(keepTeams ? '🔄 New match — teams kept' : '⚠ Everything reset');
+}
+
+function reshuffleBoard() {
+  if (game.started) { flashOk('⚠ Cannot reshuffle after game starts'); return; }
+  game.boardSeed = Date.now();
+  game.board = sampleAliens(game.pool, 24, game.boardSeed);
+  game.secretAlien = null;
+  game.alive = new Set(game.board.map(a => a.name));
+  saveState();
+  renderSetupGrid();
+  flashOk('🔀 New aliens');
+}
+
+function pickRandomSecret() {
+  const idx = Math.floor(Math.random() * game.board.length);
+  game.secretAlien = game.board[idx];
+  renderSetupGrid();
+  saveState();
+  flashOk(`🎲 Secret alien: ${game.secretAlien.name}`);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderAll() {
+  renderSetupGrid();
+  renderTeamList();
+  renderActiveTeamSelect();
+  renderQuestionOptions();
+  renderPlayGrid();
+  renderScoreboard();
+  renderSecretDisplay();
+  renderStats();
+  renderEvidenceList();
+  renderRevealArea();
+  renderTurnBanner();
+}
+
+function renderStats() {
+  qs('#stat-alive').textContent = game.alive.size || game.board.length;
+  qs('#stat-questions').textContent = game.moves.filter(m => m.type === 'ask').length;
+  qs('#candidates-alive').textContent = game.alive.size || game.board.length;
+}
+
+function renderSecretDisplay() {
+  const valEl = qs('#secret-value');
+  const miniEl = qs('#secret-mini-wrap');
+  const btn = qs('#btn-show-hide');
+  const hidden = valEl.dataset.hidden === '1';
+  if (!game.secretAlien) {
+    valEl.innerHTML = '<span class="hidden">(not set)</span>';
+    miniEl.innerHTML = '';
+    btn.style.display = 'none';
+    return;
+  }
+  btn.style.display = '';
+  if (hidden) {
+    valEl.innerHTML = '<span class="hidden">(hidden)</span>';
+    miniEl.innerHTML = '';
+    btn.textContent = '👁 Show alien';
+  } else {
+    valEl.textContent = game.secretAlien.name;
+    miniEl.innerHTML = `<div class="secret-display-mini">${renderAlien(game.secretAlien)}</div>`;
+    btn.textContent = '🙈 Hide alien';
+  }
+}
+
+function renderTurnBanner() {
+  const banner = qs('#turn-banner');
+  if (!game.started || game.winner) {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = '';
+  const team = currentTeam();
+  const turnNum = game.moves.length + 1;
+  if (game.match) {
+    qs('#turn-num').textContent = `R${game.match.round}/${game.match.totalRounds} · TURN ${turnNum}`;
+  } else {
+    qs('#turn-num').textContent = `TURN ${turnNum}`;
+  }
+  qs('#turn-team').textContent = team ? team.name : '—';
+}
+
+function renderScoreboard() {
+  const tbody = qs('#scoreboard-body');
+  tbody.innerHTML = '';
+
+  // In a match, show cumulative totals (this round's numbers are already being
+  // folded into *current* round-in-progress via team.elim — so the displayed
+  // "total" is (totalElim from completed rounds) + (this round's elim).
+  // Outside of a match, fall back to the per-game numbers.
+  const inMatch = !!game.match;
+
+  // Count turns this round from the moves log
+  const turnsPerTeam = {};
+  for (const t of game.teams) turnsPerTeam[t.id] = 0;
+  for (const m of game.moves) {
+    if (turnsPerTeam[m.team] !== undefined) turnsPerTeam[m.team]++;
+  }
+
+  // Count round wins per team (from the match's roundWinners log).
+  // Special case: if there's a game.winner set but endRound hasn't run yet
+  // (we're on the reveal screen for the round-ending question), count that
+  // winner too — so the scoreboard on the reveal already reflects the win.
+  const winsPerTeam = {};
+  for (const t of game.teams) winsPerTeam[t.id] = 0;
+  if (inMatch && game.match.roundWinners) {
+    for (const winnerId of game.match.roundWinners) {
+      if (winsPerTeam[winnerId] !== undefined) winsPerTeam[winnerId]++;
+    }
+  }
+  // In-flight round winner (reveal screen): not yet in roundWinners
+  if (inMatch && game.winner
+      && game.match.roundWinners.length < game.match.round) {
+    if (winsPerTeam[game.winner] !== undefined) winsPerTeam[game.winner]++;
+  }
+
+  // Compute display numbers per team
+  const rowData = game.teams.map(t => {
+    const thisRoundTurns = turnsPerTeam[t.id] || 0;
+    const thisRoundElim = t.elim || 0;
+    const displayTurns = inMatch ? (t.totalTurns + thisRoundTurns) : thisRoundTurns;
+    const displayElim = inMatch ? (t.totalElim + thisRoundElim) : thisRoundElim;
+    const wins = winsPerTeam[t.id] || 0;
+    return { team: t, turns: displayTurns, elim: displayElim, wins, thisRoundTurns };
+  });
+
+  // Track the top elim count for the LEADER badge — independent of row order
+  const topElim = rowData.length ? Math.max(...rowData.map(r => r.elim)) : 0;
+
+  // Preserve the user's original team-entry order. During a match, teams get
+  // rotated each round (round 2 = [B,C,D,A]), so we use the snapshot of the
+  // starting order captured when the match began. Outside a match, use the
+  // current array order.
+  if (inMatch && game.match.startingOrder) {
+    const indexById = new Map(game.match.startingOrder.map((id, i) => [id, i]));
+    rowData.sort((a, b) => {
+      const ai = indexById.has(a.team.id) ? indexById.get(a.team.id) : 999;
+      const bi = indexById.has(b.team.id) ? indexById.get(b.team.id) : 999;
+      return ai - bi;
+    });
+  }
+  // (no sort outside a match — game.teams already holds the entry order)
+
+  // "UP NEXT" badge: only show during active play (not between rounds or match-done),
+  // and only when there's no round winner yet. The up-next team is whichever
+  // team is currently selected in the active-team dropdown — that's who's
+  // actually taking the next turn.
+  const activeSel = qs('#active-team');
+  const activeTeamId = activeSel ? activeSel.value : null;
+  const showUpNext = !game.winner
+    && currentPlayMode !== 'between-rounds'
+    && currentPlayMode !== 'match-done'
+    && !!activeTeamId;
+
+  for (const row of rowData) {
+    const team = row.team;
+    const tr = document.createElement('tr');
+    // "DETECTION" badge: this team just won the current round
+    const isDetection = game.winner === team.id;
+    // "ELIMINATION" badge: leader by cumulative elim, shown between rounds & at match end
+    const isElimination = (game.winner || currentPlayMode === 'match-done')
+      && row.elim === topElim && topElim > 0;
+    const isNextUp = showUpNext && (team.id === activeTeamId);
+
+    tr.innerHTML = `
+      <td class="team-name">${team.name}
+        ${isDetection ? '<span class="badge-detection">★ ROUND</span>' : ''}
+        ${isElimination ? '<span class="badge-elimination">★ LEADER</span>' : ''}
+        ${isNextUp && !isDetection ? '<span class="badge-nextup">UP NEXT</span>' : ''}
+      </td>
+      <td class="num">${row.turns}</td>
+      <td class="num elim">${row.elim}</td>
+      <td class="num">${row.wins}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function renderEvidenceList() {
+  const list = qs('#evidence-list');
+  if (game.moves.length === 0) {
+    list.innerHTML = '<div class="ev-empty">No questions yet</div>';
+    return;
+  }
+  list.innerHTML = '';
+  // Most recent first
+  const reversed = [...game.moves].reverse();
+  reversed.forEach((move, i) => {
+    const turnNum = game.moves.length - i;
+    const item = document.createElement('div');
+    if (move.type === 'ask') {
+      item.className = 'ev-item ' + (move.answer ? 'yes' : 'no');
+      item.innerHTML = `
+        <div class="ev-top">
+          <span class="team">${move.teamName}</span>
+          <span>T${turnNum}</span>
+          <span class="elim">-${move.eliminated}</span>
+        </div>
+        <div class="ev-q">${move.questionText}
+          <span class="ev-a">${move.answer ? 'YES' : 'NO'}</span>
+        </div>
+      `;
+    } else if (move.type === 'guess') {
+      item.className = 'ev-item ' + (move.correct ? 'guess-correct' : 'guess-wrong');
+      item.innerHTML = `
+        <div class="ev-top">
+          <span class="team">${move.teamName}</span>
+          <span>T${turnNum}</span>
+          <span class="elim">${move.correct ? '★ WIN' : '-1'}</span>
+        </div>
+        <div class="ev-q">Guessed: <b>${move.alienName}</b> — ${move.correct ? 'CORRECT!' : 'wrong'}</div>
+      `;
+    }
+    list.appendChild(item);
+  });
+}
+
+function renderRevealArea() {
+  const container = qs('#reveal-container');
+  container.innerHTML = '';
+  if (!game.pendingReveal) return;
+
+  const r = game.pendingReveal;
+  if (r.kind === 'ask') {
+    const reveal = document.createElement('div');
+    reveal.className = 'answer-reveal ' + (r.answer ? 'yes' : 'no');
+    reveal.innerHTML = `
+      <div style="font-size: 14px; color: white; opacity: 0.9; letter-spacing: 0.15em; margin-bottom: 8px;">${r.teamName} ASKED</div>
+      <div style="font-size: 18px; color: white; margin-bottom: 14px; font-style: italic;">"${r.questionText}"</div>
+      <div class="answer-word">${r.answer ? 'YES' : 'NO'}</div>
+      <div class="answer-sub">
+        <span class="elim-count">-${r.eliminated}</span> alien${r.eliminated === 1 ? '' : 's'} eliminated
+      </div>
+    `;
+    container.appendChild(reveal);
+
+    // If this question narrowed it down to exactly one alien, this team wins.
+    if (r.wonByElimination) {
+      const win = document.createElement('div');
+      win.className = 'guess-result correct';
+      win.style.marginTop = '16px';
+      win.innerHTML = `
+        <div style="font-size: 14px; opacity: 0.9; letter-spacing: 0.15em; margin-bottom: 8px;">ONLY ONE LEFT</div>
+        <div style="font-size: 24px; margin-bottom: 12px; font-weight: 700;">${game.secretAlien.name}</div>
+        <div class="verdict">★ ${r.teamName} WINS!</div>
+        <div class="detail">The secret alien was <b>${game.secretAlien.name}</b>. Found by elimination — no guessing.</div>
+      `;
+      container.appendChild(win);
+    }
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'controls-row';
+    btnRow.style.justifyContent = 'center';
+    btnRow.innerHTML = r.wonByElimination
+      ? '<button class="btn big" id="btn-continue">End game →</button>'
+      : '<button class="btn big" id="btn-continue">Continue →</button>';
+    container.appendChild(btnRow);
+    qs('#btn-continue').addEventListener('click', continueToNextTurn);
+  } else if (r.kind === 'guess') {
+    // Legacy path — only reachable from saved state of an older game log.
+    // New games never produce guess moves.
+    const reveal = document.createElement('div');
+    reveal.className = 'guess-result ' + (r.correct ? 'correct' : 'wrong');
+    reveal.innerHTML = `
+      <div style="font-size: 14px; opacity: 0.9; letter-spacing: 0.15em; margin-bottom: 8px;">${r.teamName} GUESSED</div>
+      <div style="font-size: 24px; margin-bottom: 12px; font-weight: 700;">${r.alienName}</div>
+      <div class="verdict">${r.correct ? '★ CORRECT!' : 'WRONG'}</div>
+      <div class="detail">${r.correct ? `${r.teamName} wins! The secret alien was ${game.secretAlien.name}.` : 'Turn ends. One more alien is eliminated.'}</div>
+    `;
+    container.appendChild(reveal);
+    const btnRow = document.createElement('div');
+    btnRow.className = 'controls-row';
+    btnRow.style.justifyContent = 'center';
+    btnRow.innerHTML = r.correct
+      ? '<button class="btn big" id="btn-continue">End game →</button>'
+      : '<button class="btn big" id="btn-continue">Continue →</button>';
+    container.appendChild(btnRow);
+    qs('#btn-continue').addEventListener('click', continueToNextTurn);
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Load or generate
+  const loaded = loadState();
+  // Always ensure we have a valid pool (now derived from EMBEDDED_ALIENS)
+  if (!game.pool || !game.pool.length) {
+    game.pool = generateAlienPool();
+  }
+  // Check if saved board aliens still exist in the current embedded pool.
+  // If not (stale state from an older version), reset the board.
+  const validNames = new Set(EMBEDDED_ALIENS.map(a => a.name));
+  const boardValid = game.board && game.board.length > 0 && game.board.every(a => validNames.has(a.name));
+  if (!loaded || !boardValid) {
+    if (loaded && !boardValid) {
+      console.log('Saved state contains aliens not in current pool; resetting board.');
+    }
+    game.boardSeed = Date.now();
+    game.board = sampleAliens(game.pool, 24, game.boardSeed);
+    game.alive = new Set(game.board.map(a => a.name));
+    game.secretAlien = null;
+    game.moves = [];
+    game.started = false;
+    game.winner = null;
+    // Start with no teams — user adds them via the input
+    if (!game.teams) { game.teams = []; }
+    saveState();
+  }
+  // Auto-hide secret on refresh
+  const valEl = qs('#secret-value');
+  if (valEl) valEl.dataset.hidden = '1';
+
+  renderAll();
+
+  // If game was in progress, go to play tab
+  if (game.started) {
+    switchTab('play');
+  }
+  // Determine the right play mode on restore:
+  //   - If we're in a match and the current round has a winner, we're between rounds
+  //     (or at match-done if all rounds are recorded).
+  //   - Otherwise, default to idle.
+  if (game.started && game.match && game.winner) {
+    if (game.match.roundWinners.length >= game.match.totalRounds) {
+      setPlayMode('match-done');
+    } else {
+      setPlayMode('between-rounds');
+    }
+  } else {
+    setPlayMode('idle');
+  }
+
+  // ---- Wire events ----
+  qsa('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+  qs('#btn-add-team').addEventListener('click', addTeam);
+  const newTeamInput = qs('#new-team-input');
+  if (newTeamInput) {
+    newTeamInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); addTeam(); }
+    });
+  }
+  qs('#btn-shuffle-teams').addEventListener('click', shuffleTeams);
+  qs('#btn-reshuffle').addEventListener('click', reshuffleBoard);
+  qs('#btn-random-secret').addEventListener('click', pickRandomSecret);
+  qs('#btn-start').addEventListener('click', startGame);
+
+  qs('#active-team').addEventListener('change', () => {
+    renderTurnBanner();
+    renderScoreboard();
+  });
+
+  qs('#btn-ask-mode').addEventListener('click', () => {
+    const searchEl = qs('#question-search');
+    if (searchEl) searchEl.value = '';
+    setPlayMode('asking');
+    if (searchEl) setTimeout(() => searchEl.focus(), 50);
+  });
+  qs('#btn-cancel-ask').addEventListener('click', () => setPlayMode('idle'));
+  qs('#btn-reveal-answer').addEventListener('click', commitAsk);
+
+  // Round transition buttons
+  const btnNextRound = qs('#btn-next-round');
+  if (btnNextRound) btnNextRound.addEventListener('click', startNextRound);
+  const btnEndMatch = qs('#btn-end-match');
+  if (btnEndMatch) btnEndMatch.addEventListener('click', endMatch);
+
+  // Preview-highlight toggle: restore saved state, then wire change handlers.
+  const previewToggle = qs('#preview-toggle');
+  if (previewToggle) {
+    const saved = localStorage.getItem('findTheAlien.previewOn');
+    // Default to ON if nothing saved (first-time users get the training wheels).
+    previewToggle.checked = (saved === null) ? true : (saved === '1');
+    previewToggle.addEventListener('change', () => {
+      localStorage.setItem('findTheAlien.previewOn', previewToggle.checked ? '1' : '0');
+      renderQuestionPreview();
+    });
+  }
+  // Re-highlight as the user picks different questions (click or arrow-key).
+  const qSelect = qs('#question-select');
+  if (qSelect) {
+    qSelect.addEventListener('change', renderQuestionPreview);
+    qSelect.addEventListener('click', renderQuestionPreview);
+    qSelect.addEventListener('keyup', renderQuestionPreview);
+  }
+
+  qs('#btn-undo').addEventListener('click', undoLastMove);
+  qs('#btn-new-game-keep').addEventListener('click', () => newGame(true));
+  qs('#btn-new-game-wipe').addEventListener('click', () => {
+    if (confirm('Reset everything? This clears teams and the secret alien.')) newGame(false);
+  });
+
+  qs('#btn-show-hide').addEventListener('click', () => {
+    const el = qs('#secret-value');
+    el.dataset.hidden = el.dataset.hidden === '1' ? '0' : '1';
+    renderSecretDisplay();
+  });
+});
+</script>
+</body>
+</html>
