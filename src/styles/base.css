@@ -8,109 +8,17 @@ html, body {
   font-family: var(--font-stack);
 }
 
-body {
-  min-height: 100vh;
-}
+body { min-height: 100vh; }
 
 a { color: var(--ember); }
 a:hover { color: var(--steel); }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-}
+button { font-family: inherit; cursor: pointer; }
 
 img { max-width: 100%; display: block; }
 
-.app-shell {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+h1, h2, h3 { margin: 0; }
 
-.brand-header {
-  border-bottom: 3px solid var(--ember);
-  padding-bottom: 16px;
-  margin-bottom: 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-}
-.brand-header .brand {
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  color: var(--ember);
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.brand-header .title {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--steel);
-  margin-top: 4px;
-  line-height: 1.1;
-}
-.brand-header .subtitle {
-  font-size: 14px;
-  color: var(--gray);
-  font-style: italic;
-  margin-top: 4px;
-}
+p { margin: 0 0 12px; }
 
-.coming-soon-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: var(--softgray);
-  border-radius: 12px;
-  padding: 40px 24px;
-  border: 1px solid var(--lightgray);
-}
-.coming-soon-card img {
-  width: 200px;
-  max-width: 60vw;
-  margin-bottom: 24px;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
-}
-.coming-soon-card h2 {
-  font-size: 24px;
-  margin: 0 0 8px;
-  color: var(--steel);
-}
-.coming-soon-card p {
-  font-size: 15px;
-  color: var(--gray);
-  max-width: 480px;
-  margin: 0 auto;
-  line-height: 1.5;
-}
-
-.brand-footer {
-  margin-top: 32px;
-  padding-top: 16px;
-  border-top: 1px solid var(--lightgray);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: var(--gray);
-}
-.brand-footer .footer-brand {
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--ember);
-}
-
-@media (min-width: 768px) {
-  .brand-header .title { font-size: 42px; }
-  .coming-soon-card { padding: 60px 32px; }
-  .coming-soon-card h2 { font-size: 28px; }
-}
+input, select { font-family: inherit; }

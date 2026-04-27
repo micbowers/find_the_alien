@@ -1,0 +1,212 @@
+import { game, currentTeam } from '../../core/state.js';
+import { commitAsk, continueAfterReveal, startNextHunt, undoLastMove } from '../../core/engine.js';
+import { renderAlienGrid } from '../components/alienGrid.js';
+import { renderEvidenceRail } from '../components/evidenceRail.js';
+import { renderScoreboard } from '../components/scoreboard.js';
+import { renderSplitPreview, computeSplit } from '../components/splitPreview.js';
+import { renderQuestionPicker } from '../components/questionInput.js';
+import { renderRevealCard } from '../components/revealCard.js';
+import { renderTurnBanner } from '../components/turnBanner.js';
+
+const escape = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+})[c]);
+
+// playMode:
+//   'idle'           — turn banner + Ask button
+//   'asking'         — question picker + split preview
+//   'reveal'         — answer reveal card + Continue button
+//   'between-hunts'  — hunt-complete summary + start-next-hunt button
+let playMode = 'idle';
+let previewedQid = null;
+
+export function setPlayMode(mode) {
+  playMode = mode;
+  previewedQid = null;
+}
+export function getPlayMode() {
+  return playMode;
+}
+
+export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
+  // Build the layout shell once per render — components paint into named slots.
+  const huntIdx = game.match?.huntIndex ?? 1;
+  const totalHunts = game.match?.totalHunts ?? 1;
+
+  container.innerHTML = `
+    <div class="play-split">
+      <div class="play-grid-col">
+        <div class="panel">
+          <h2 id="play-grid-title">Alien field — Hunt ${huntIdx} of ${totalHunts}</h2>
+          <div class="alien-grid" id="play-grid"></div>
+        </div>
+      </div>
+      <div class="play-controls-col">
+        <div class="stats-row">
+          <div class="stat alive">
+            <div class="label">ALIVE</div>
+            <div class="value" id="stat-alive">${game.alive.size}</div>
+            <div class="sub">of 24</div>
+          </div>
+          <div class="stat elim">
+            <div class="label">QUESTIONS</div>
+            <div class="value" id="stat-questions">${game.moves.filter(m => m.type === 'ask').length}</div>
+            <div class="sub">this hunt</div>
+          </div>
+        </div>
+
+        <div id="play-turn-banner"></div>
+        <div id="play-panel-main"></div>
+        <div id="play-scoreboard" class="panel"></div>
+        <div id="play-evidence-rail" class="evidence-rail"></div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+          <button class="btn outline" id="play-undo">↶ Undo last</button>
+          <button class="btn outline" id="play-reset">⟲ Reset match</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const gridEl = container.querySelector('#play-grid');
+  const bannerEl = container.querySelector('#play-turn-banner');
+  const mainEl = container.querySelector('#play-panel-main');
+  const sbEl = container.querySelector('#play-scoreboard');
+  const evidenceEl = container.querySelector('#play-evidence-rail');
+
+  function paintMainPanel() {
+    if (playMode === 'idle') {
+      const team = currentTeam();
+      mainEl.innerHTML = `
+        <div class="panel">
+          <h2>Your move</h2>
+          <p class="panel-tip">${team ? escape(team.name) : 'Someone'}, pick a question that splits the remaining aliens roughly in half. Good questions eliminate the most.</p>
+          <button class="btn big" id="btn-ask">Ask a question</button>
+        </div>
+      `;
+      mainEl.querySelector('#btn-ask').addEventListener('click', () => {
+        setPlayMode('asking');
+        repaint();
+      });
+    } else if (playMode === 'asking') {
+      mainEl.innerHTML = `
+        <div class="panel">
+          <h2>Pick a question</h2>
+          <div id="split-slot"></div>
+          <div id="picker-slot"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn outline" id="btn-cancel-ask">Back</button>
+          </div>
+        </div>
+      `;
+      const splitSlot = mainEl.querySelector('#split-slot');
+      const pickerSlot = mainEl.querySelector('#picker-slot');
+      renderQuestionPicker(pickerSlot, {
+        onSelect: (qid) => {
+          commitAsk(qid);
+          setPlayMode('reveal');
+          repaint();
+        },
+        onPreview: (qid) => {
+          previewedQid = qid;
+          renderSplitPreview(splitSlot, qid);
+          // Re-highlight the alien grid
+          const split = qid ? computeSplit(qid) : null;
+          renderAlienGrid(gridEl, {
+            previewMatchIds: split ? split.yesNames : null,
+          });
+        },
+      });
+      mainEl.querySelector('#btn-cancel-ask').addEventListener('click', () => {
+        setPlayMode('idle');
+        repaint();
+      });
+    } else if (playMode === 'reveal') {
+      const move = game.pendingReveal;
+      mainEl.innerHTML = `
+        <div class="panel">
+          <h2>Result</h2>
+          <div id="reveal-slot"></div>
+          <button class="btn big" id="btn-continue" style="margin-top:8px;">Continue ▶</button>
+        </div>
+      `;
+      renderRevealCard(mainEl.querySelector('#reveal-slot'), move);
+      mainEl.querySelector('#btn-continue').addEventListener('click', () => {
+        const next = continueAfterReveal();
+        if (next === 'between-hunts') {
+          setPlayMode('between-hunts');
+          repaint();
+        } else if (next === 'match-done') {
+          if (onMatchDone) onMatchDone();
+        } else {
+          setPlayMode('idle');
+          repaint();
+        }
+      });
+    } else if (playMode === 'between-hunts') {
+      const winnerTeam = game.teams.find(t => t.id === game.huntWinner);
+      const secretName = game.secretAlien?.name ?? '—';
+      const nextHunt = (game.match?.huntIndex ?? 1) + 1;
+      // After endHunt the team rotation hasn't happened yet; the first team in
+      // teams[] is still the previous starter. The next starter will be teams[1]
+      // (which becomes teams[0] after startNextHunt's shift/push).
+      const nextStarter = game.teams.length > 1 ? game.teams[1] : game.teams[0];
+      mainEl.innerHTML = `
+        <div class="panel">
+          <h2>★ Hunt ${game.match.huntIndex} complete</h2>
+          <p class="panel-tip">
+            ${winnerTeam ? `<b>${escape(winnerTeam.name)}</b> cracked it — the alien was <b>${escape(secretName)}</b>.` : `The alien was <b>${escape(secretName)}</b>.`}
+            ${nextStarter ? ` <b>${escape(nextStarter.name)}</b> starts Hunt ${nextHunt}.` : ''}
+          </p>
+          <button class="btn big" id="btn-next-hunt">▶ Start Hunt ${nextHunt} of ${game.match.totalHunts}</button>
+        </div>
+      `;
+      mainEl.querySelector('#btn-next-hunt').addEventListener('click', () => {
+        startNextHunt();
+        setPlayMode('idle');
+        repaint();
+      });
+    }
+  }
+
+  function repaint() {
+    const huntIdxNow = game.match?.huntIndex ?? 1;
+    const totalHuntsNow = game.match?.totalHunts ?? 1;
+    container.querySelector('#play-grid-title').textContent =
+      `Alien field — Hunt ${huntIdxNow} of ${totalHuntsNow}`;
+    container.querySelector('#stat-alive').textContent = game.alive.size;
+    container.querySelector('#stat-questions').textContent = game.moves.filter(m => m.type === 'ask').length;
+
+    // Show grid with reveal-secret highlight only when between hunts (hunt is over)
+    const revealSecret = playMode === 'between-hunts';
+    renderAlienGrid(gridEl, { revealSecret });
+
+    renderTurnBanner(bannerEl);
+    paintMainPanel();
+    sbEl.innerHTML = '';
+    renderScoreboard(sbEl, {
+      highlightDetective: !!game.huntWinner,
+      highlightLeader: playMode === 'between-hunts',
+      activeTeamId: playMode === 'idle' ? currentTeam()?.id : null,
+    });
+    renderEvidenceRail(evidenceEl);
+  }
+
+  // Buttons
+  container.querySelector('#play-undo').addEventListener('click', () => {
+    const ok = undoLastMove();
+    if (ok) {
+      setPlayMode('idle');
+      repaint();
+    } else {
+      // No-op — the engine declined (e.g., no moves or hunt already over).
+    }
+  });
+  container.querySelector('#play-reset').addEventListener('click', () => {
+    if (confirm('Reset the match? This clears all teams, scores, and the current hunt.')) {
+      onResetMatch && onResetMatch();
+    }
+  });
+
+  repaint();
+}
