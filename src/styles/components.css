@@ -214,9 +214,99 @@
 .team-row .remove-btn:hover { color: #b33a3a; }
 
 /* Question input + canned-list picker */
+.question-card .qp-text-form { margin-bottom: 0; }
+.question-card .qp-tip {
+  font-size: 11px;
+  color: var(--gray);
+  font-style: italic;
+  margin-top: 6px;
+}
+.question-card #qp-text {
+  flex: 1;
+  width: auto;
+}
 .question-card .question-search {
   margin-bottom: 8px;
 }
+
+/* qp-status: container for matched / ambiguous / off-topic / error states */
+#qp-status:empty { display: none; }
+#qp-status > div { margin-top: 12px; }
+
+.qp-loading {
+  background: #eae6de;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--steel);
+  font-weight: 600;
+  text-align: center;
+}
+
+.qp-matched {
+  background: rgba(14, 158, 138, 0.10);
+  border: 2px solid var(--teal);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.qp-matched-line { font-size: 14px; color: var(--steel); margin-bottom: 10px; }
+.qp-matched .qp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.qp-ambiguous {
+  background: rgba(245, 196, 0, 0.12);
+  border: 2px solid var(--yellow);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.qp-ambiguous-line { font-size: 13px; font-weight: 700; color: var(--steel); margin-bottom: 10px; letter-spacing: 0.05em; }
+.qp-candidates { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.qp-candidates .qp-candidate { text-align: left; }
+
+.qp-offtopic {
+  background: #f7f5f0;
+  border: 2px solid #d8d4cc;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.qp-offtopic-line { font-size: 14px; color: var(--steel); margin-bottom: 6px; }
+
+.qp-error {
+  background: #fff0f0;
+  border: 2px solid #b33a3a;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.qp-error-line { font-size: 13px; color: #8a2020; font-weight: 600; margin-bottom: 4px; }
+
+/* Collapsible canned-list */
+.qp-list-toggle {
+  margin-top: 14px;
+  border-top: 1px solid #d8d4cc;
+  padding-top: 12px;
+}
+.qp-list-summary {
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--gray);
+  list-style: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+.qp-list-summary::-webkit-details-marker { display: none; }
+.qp-list-summary::before {
+  content: '▶';
+  font-size: 10px;
+  color: var(--ember);
+  transition: transform 0.15s ease;
+}
+.qp-list-toggle[open] .qp-list-summary::before { transform: rotate(90deg); }
+.qp-list-summary:hover { color: var(--ember); }
+
 .question-list {
   max-height: 320px;
   overflow-y: auto;
