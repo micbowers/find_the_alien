@@ -310,6 +310,135 @@
 .answer-reveal .answer-sub { font-size: 13px; margin-top: 10px; }
 .answer-reveal .elim-count { color: var(--yellow); font-weight: 900; font-size: 20px; }
 
+/* Hunt-won celebration card (Phase 1.9; theatrics in Phase 4) */
+.celebration-card {
+  background: linear-gradient(135deg, #fff8d6 0%, #ffeaa3 100%);
+  border: 3px solid var(--yellow);
+  border-radius: 14px;
+  padding: 24px 20px;
+  margin: 8px 0;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(245, 196, 0, 0.25);
+}
+.celebration-headline {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: var(--ember);
+  text-shadow: 2px 2px 0 var(--yellow);
+  animation: celebration-pulse 1.4s ease-in-out infinite;
+}
+.celebration-alien {
+  display: flex;
+  justify-content: center;
+  margin: 18px 0;
+}
+.celebration-alien-card {
+  width: 220px;
+  max-width: 90%;
+  border: 4px solid var(--yellow) !important;
+  box-shadow: 0 0 0 6px rgba(245, 196, 0, 0.35), 0 8px 22px rgba(0,0,0,0.15);
+}
+.celebration-alien-card .alien-name { font-size: 20px; }
+.celebration-line {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--steel);
+}
+.celebration-line b { color: var(--ember); }
+.celebration-sub {
+  font-size: 13px;
+  color: var(--gray);
+  margin-top: 6px;
+  font-style: italic;
+}
+@keyframes celebration-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+/* Scoreboard winner row tints */
+.scoreboard tr.is-leader {
+  background: rgba(14, 158, 138, 0.12);
+}
+.scoreboard tr.is-detective {
+  background: rgba(245, 196, 0, 0.20);
+}
+.scoreboard tr.is-leader.is-detective {
+  background: linear-gradient(90deg, rgba(14, 158, 138, 0.16) 0%, rgba(245, 196, 0, 0.22) 100%);
+}
+
+/* Elimination Coach toggle (a pill button) */
+.coach-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: 2px solid #c8c4bc;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--steel);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.coach-toggle:hover { border-color: var(--teal); }
+.coach-toggle.on  { border-color: var(--teal); background: rgba(14, 158, 138, 0.08); }
+.coach-toggle.off { border-color: #c8c4bc; background: var(--white); color: var(--gray); }
+.coach-toggle .coach-state { font-weight: 900; letter-spacing: 0.15em; }
+.coach-toggle.on  .coach-state { color: var(--teal); }
+.coach-toggle.off .coach-state { color: var(--gray); }
+
+/* Restart-confirm modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 37, 48, 0.55);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-confirm {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px 22px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+.modal-confirm h3 {
+  font-size: 18px;
+  margin: 0 0 8px;
+  color: var(--steel);
+}
+.modal-confirm p {
+  font-size: 14px;
+  color: var(--gray);
+  margin: 0 0 16px;
+}
+.modal-confirm .modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal-confirm .modal-cancel {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  color: var(--gray);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px;
+  font-family: inherit;
+}
+.modal-confirm .modal-cancel:hover { color: var(--steel); }
+
 /* Evidence rail */
 .evidence-rail {
   background: #f7f5f0;

@@ -1,5 +1,6 @@
 import { game } from '../../core/state.js';
 import { QUESTIONS_BY_ID } from '../../data/questions.js';
+import { getCoachOn } from '../../core/prefs.js';
 
 // Compute the split (alive aliens that would answer YES vs NO) for a question
 // and return both the data and a Set of names that would answer YES (for grid highlight).
@@ -25,6 +26,12 @@ export function computeSplit(questionId) {
 
 export function renderSplitPreview(container, questionId) {
   if (!container) return;
+  // Elimination Coach OFF: don't render the panel.
+  if (!getCoachOn()) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
   if (!questionId) {
     container.innerHTML = '';
     container.style.display = 'none';

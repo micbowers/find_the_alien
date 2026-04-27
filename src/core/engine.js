@@ -1,4 +1,4 @@
-import { game, saveState, currentTeam } from './state.js';
+import { game, saveState, currentTeam, resetEverything } from './state.js';
 import { sampleAliens } from '../data/aliens.js';
 import { QUESTIONS, QUESTIONS_BY_ID } from '../data/questions.js';
 
@@ -42,6 +42,17 @@ export function startMatch(teamNames) {
   game.secretAlien = game.board[idx];
 
   saveState();
+}
+
+// Restart the current match keeping the same team names. Wipes all scores
+// and progress. Used by the play-screen "Restart match → Keep teams" flow
+// and the match-done screen "Play again — same teams" button.
+export function restartMatchKeepTeams() {
+  const names = game.teams.map(t => t.name);
+  resetEverything();
+  if (names.length > 0) {
+    startMatch(names);
+  }
 }
 
 // ============================================================

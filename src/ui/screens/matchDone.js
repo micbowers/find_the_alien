@@ -51,8 +51,8 @@ export function renderMatchDoneScreen(container, { onPlayAgain, onHome }) {
       </ul>
 
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn big" id="md-again">▶ New Match</button>
-        <button class="btn outline" id="md-home">← Home</button>
+        <button class="btn big" id="md-again">▶ Play again — same teams</button>
+        <button class="btn outline" id="md-home">Choose new teams</button>
       </div>
     </div>
   `;

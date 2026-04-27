@@ -45,10 +45,12 @@ export function renderScoreboard(container, opts = {}) {
     const isLeader = highlightLeader && row.elim === topElim && topElim > 0;
     const isNextUp = !!activeTeamId && row.team.id === activeTeamId && !game.huntWinner;
     const tr = document.createElement('tr');
+    if (isLeader) tr.classList.add('is-leader');
+    if (isDetective) tr.classList.add('is-detective');
     tr.innerHTML = `
       <td class="team-name">${escape(row.team.name)}
         ${isDetective ? '<span class="badge-detection">★ DETECTIVE</span>' : ''}
-        ${isLeader && !isDetective ? '<span class="badge-elimination">★ LEADER</span>' : ''}
+        ${isLeader ? '<span class="badge-elimination">★ LEADER</span>' : ''}
         ${isNextUp && !isDetective && !isLeader ? '<span class="badge-detection" style="background:var(--arc);color:white;">UP NEXT</span>' : ''}
       </td>
       <td class="num">${row.team.totalTurns}</td>

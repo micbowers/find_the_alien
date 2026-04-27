@@ -1,5 +1,6 @@
 import { game, currentTeam } from '../../core/state.js';
-import { commitAsk, continueAfterReveal, startNextHunt, undoLastMove } from '../../core/engine.js';
+import { commitAsk, continueAfterReveal, startNextHunt, undoLastMove, restartMatchKeepTeams } from '../../core/engine.js';
+import { getCoachOn, setCoachOn } from '../../core/prefs.js';
 import { renderAlienGrid } from '../components/alienGrid.js';
 import { renderEvidenceRail } from '../components/evidenceRail.js';
 import { renderScoreboard } from '../components/scoreboard.js';
@@ -55,6 +56,13 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
           </div>
         </div>
 
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="coach-toggle" id="play-coach-toggle" type="button">
+            <span>🎓 Elimination Coach</span>
+            <span class="coach-state" id="play-coach-state">ON</span>
+          </button>
+        </div>
+
         <div id="play-turn-banner"></div>
         <div id="play-panel-main"></div>
         <div id="play-scoreboard" class="panel"></div>
@@ -62,10 +70,11 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
 
         <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
           <button class="btn outline" id="play-undo">↶ Undo last</button>
-          <button class="btn outline" id="play-reset">⟲ Reset match</button>
+          <button class="btn outline" id="play-restart">⟲ Restart match</button>
         </div>
       </div>
     </div>
+    <div id="play-modal-host"></div>
   `;
 
   const gridEl = container.querySelector('#play-grid');
@@ -192,21 +201,93 @@ export function renderPlayScreen(container, { onMatchDone, onResetMatch }) {
     renderEvidenceRail(evidenceEl);
   }
 
-  // Buttons
+  // Coach toggle
+  function paintCoachToggle() {
+    const btn = container.querySelector('#play-coach-toggle');
+    const stateEl = container.querySelector('#play-coach-state');
+    if (!btn || !stateEl) return;
+    const on = getCoachOn();
+    btn.classList.toggle('on', on);
+    btn.classList.toggle('off', !on);
+    stateEl.textContent = on ? 'ON' : 'OFF';
+    btn.title = on
+      ? 'Hide the YES/NO split panel and grid hints'
+      : 'Show the YES/NO split panel and grid hints';
+  }
+  container.querySelector('#play-coach-toggle').addEventListener('click', () => {
+    setCoachOn(!getCoachOn());
+    paintCoachToggle();
+    // Re-render whatever depends on coach state. If we're previewing a question,
+    // refresh the split panel + grid.
+    if (playMode === 'asking' && previewedQid) {
+      const splitSlot = container.querySelector('#split-slot');
+      if (splitSlot) renderSplitPreview(splitSlot, previewedQid);
+      const split = computeSplit(previewedQid);
+      renderAlienGrid(gridEl, {
+        previewMatchIds: split ? split.yesNames : null,
+      });
+    } else if (playMode === 'asking') {
+      // No previewed qid yet — clear the panel.
+      const splitSlot = container.querySelector('#split-slot');
+      if (splitSlot) splitSlot.innerHTML = '';
+      renderAlienGrid(gridEl);
+    }
+  });
+
+  // Restart-match confirmation modal
+  container.querySelector('#play-restart').addEventListener('click', () => {
+    showRestartModal(container, {
+      onKeepTeams: () => {
+        restartMatchKeepTeams();
+        setPlayMode('idle');
+        repaint();
+      },
+      onChooseNew: () => {
+        onResetMatch && onResetMatch();
+      },
+    });
+  });
+
+  // Undo
   container.querySelector('#play-undo').addEventListener('click', () => {
     const ok = undoLastMove();
     if (ok) {
       setPlayMode('idle');
       repaint();
-    } else {
-      // No-op — the engine declined (e.g., no moves or hunt already over).
-    }
-  });
-  container.querySelector('#play-reset').addEventListener('click', () => {
-    if (confirm('Reset the match? This clears all teams, scores, and the current hunt.')) {
-      onResetMatch && onResetMatch();
     }
   });
 
+  paintCoachToggle();
   repaint();
+}
+
+function showRestartModal(container, { onKeepTeams, onChooseNew }) {
+  const host = container.querySelector('#play-modal-host');
+  if (!host) return;
+  host.innerHTML = `
+    <div class="modal-backdrop" id="modal-backdrop">
+      <div class="modal-confirm" role="dialog" aria-modal="true">
+        <h3>Restart match?</h3>
+        <p>This wipes the current scores and starts a new match. Want to keep your teams or choose new ones?</p>
+        <div class="modal-buttons">
+          <button class="btn" id="modal-keep">Keep these teams</button>
+          <button class="btn outline" id="modal-new">Choose new teams</button>
+        </div>
+        <button class="modal-cancel" id="modal-cancel">cancel</button>
+      </div>
+    </div>
+  `;
+  const close = () => { host.innerHTML = ''; };
+  host.querySelector('#modal-backdrop').addEventListener('click', e => {
+    if (e.target.id === 'modal-backdrop') close();
+  });
+  host.querySelector('#modal-cancel').addEventListener('click', close);
+  host.querySelector('#modal-keep').addEventListener('click', () => {
+    close();
+    onKeepTeams && onKeepTeams();
+  });
+  host.querySelector('#modal-new').addEventListener('click', () => {
+    close();
+    onChooseNew && onChooseNew();
+  });
 }
