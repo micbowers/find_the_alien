@@ -24,6 +24,7 @@ export const game = {
   pendingReveal: null,
   currentTeamIndex: 0,
   match: null,
+  mode: 'team',            // 'team' | 'solo' — drives screen routing + celebration framing
 };
 
 let v0Wiped = false;
@@ -46,6 +47,7 @@ export function saveState() {
       pendingReveal: game.pendingReveal,
       currentTeamIndex: game.currentTeamIndex,
       match: game.match,
+      mode: game.mode,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serial));
   } catch (e) { console.warn('save failed', e); }
@@ -82,6 +84,7 @@ export function loadState() {
     game.pendingReveal = s.pendingReveal ?? null;
     game.currentTeamIndex = s.currentTeamIndex ?? 0;
     game.match = s.match || null;
+    game.mode = s.mode === 'solo' ? 'solo' : 'team';
     return true;
   } catch (e) {
     console.warn('load failed', e);
@@ -101,6 +104,7 @@ export function resetEverything() {
   game.pendingReveal = null;
   game.currentTeamIndex = 0;
   game.match = null;
+  game.mode = 'team';
   saveState();
 }
 

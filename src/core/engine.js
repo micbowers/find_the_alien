@@ -8,8 +8,9 @@ import { QUESTIONS, QUESTIONS_BY_ID } from '../data/questions.js';
 
 // Start a new match.
 //   teamNames: array of strings
+//   opts.mode: 'team' | 'solo' (default 'team')
 // Initializes board (24 random aliens), picks secret, sets up match state.
-export function startMatch(teamNames) {
+export function startMatch(teamNames, opts = {}) {
   if (!teamNames || teamNames.length === 0) {
     throw new Error('startMatch requires at least one team name');
   }
@@ -20,6 +21,7 @@ export function startMatch(teamNames) {
   game.huntWinner = null;
   game.pendingReveal = null;
   game.currentTeamIndex = 0;
+  game.mode = opts.mode === 'solo' ? 'solo' : 'team';
 
   game.teams = teamNames.map((name, i) => ({
     id: 't' + (i + 1) + '_' + Date.now(),
@@ -44,14 +46,22 @@ export function startMatch(teamNames) {
   saveState();
 }
 
+// Start a solo score-attack match. Wraps startMatch with a single
+// implicit "You" team and mode='solo'. Match ends after a single hunt
+// because totalHunts = teams.length = 1.
+export function startSoloMatch() {
+  startMatch(['You'], { mode: 'solo' });
+}
+
 // Restart the current match keeping the same team names. Wipes all scores
 // and progress. Used by the play-screen "Restart match → Keep teams" flow
 // and the match-done screen "Play again — same teams" button.
 export function restartMatchKeepTeams() {
   const names = game.teams.map(t => t.name);
+  const mode = game.mode;
   resetEverything();
   if (names.length > 0) {
-    startMatch(names);
+    startMatch(names, { mode });
   }
 }
 

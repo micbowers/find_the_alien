@@ -1,5 +1,5 @@
 import { game, loadState, resetEverything, wasV0Wiped } from '../core/state.js';
-import { startMatch } from '../core/engine.js';
+import { startMatch, startSoloMatch } from '../core/engine.js';
 import { gmSpeak, clear as gmClear } from '../core/gm.js';
 import { unlockAudio, playSFX, preloadAlienVoice, pruneAlienVoiceCacheExcept } from '../core/audio.js';
 import { mountGMBubble } from './components/gmBubble.js';
@@ -8,6 +8,7 @@ import { renderHomeScreen } from './screens/home.js';
 import { renderSetupScreen } from './screens/setup.js';
 import { renderPlayScreen, setPlayMode } from './screens/play.js';
 import { renderMatchDoneScreen } from './screens/matchDone.js';
+import { renderSoloDoneScreen } from './screens/soloDone.js';
 
 let screenContainer;
 let bannerHost;
@@ -34,7 +35,21 @@ function paint() {
         currentScreen = 'setup';
         paint();
       },
-      onStartSolo: null, // disabled until Phase 5
+      onStartSolo: () => {
+        startSoloMatch();
+        setPlayMode('idle');
+        currentScreen = 'play';
+        gmClear();
+        const secretName = game.secretAlien?.name;
+        pruneAlienVoiceCacheExcept(secretName);
+        if (secretName) preloadAlienVoice(secretName);
+        gmSpeak('hunt_start', {
+          n: 1,
+          total: 1,
+          starter: 'You',
+        });
+        paint();
+      },
     });
   } else if (currentScreen === 'setup') {
     renderSetupScreen(screenContainer, {
@@ -80,42 +95,68 @@ function paint() {
       },
     });
   } else if (currentScreen === 'match-done') {
-    renderMatchDoneScreen(screenContainer, {
-      onPlayAgain: () => {
-        // Keep team names; restart match with same teams.
-        const names = game.teams.map(t => t.name);
-        resetEverything();
-        startMatch(names);
-        setPlayMode('idle');
-        currentScreen = 'play';
-        gmClear();
-        const secretName = game.secretAlien?.name;
-        pruneAlienVoiceCacheExcept(secretName);
-        if (secretName) preloadAlienVoice(secretName);
-        gmSpeak('match_start', {
-          hunts: game.match?.totalHunts ?? names.length,
-          teams: names.length,
-          board: game.board.length,
-        });
-        gmSpeak('hunt_start', {
-          n: 1,
-          total: game.match?.totalHunts ?? names.length,
-          starter: game.teams[0]?.name ?? '—',
-        });
-        paint();
-      },
-      onHome: () => {
-        gmClear();
-        resetEverything();
-        currentScreen = 'home';
-        paint();
-      },
-    });
+    if (game.mode === 'solo') {
+      renderSoloDoneScreen(screenContainer, {
+        onPlayAgain: () => {
+          gmClear();
+          resetEverything();
+          startSoloMatch();
+          setPlayMode('idle');
+          currentScreen = 'play';
+          const secretName = game.secretAlien?.name;
+          pruneAlienVoiceCacheExcept(secretName);
+          if (secretName) preloadAlienVoice(secretName);
+          gmSpeak('hunt_start', { n: 1, total: 1, starter: 'You' });
+          paint();
+        },
+        onHome: () => {
+          gmClear();
+          resetEverything();
+          currentScreen = 'home';
+          paint();
+        },
+      });
+    } else {
+      renderMatchDoneScreen(screenContainer, {
+        onPlayAgain: () => {
+          // Keep team names; restart match with same teams.
+          const names = game.teams.map(t => t.name);
+          resetEverything();
+          startMatch(names);
+          setPlayMode('idle');
+          currentScreen = 'play';
+          gmClear();
+          const secretName = game.secretAlien?.name;
+          pruneAlienVoiceCacheExcept(secretName);
+          if (secretName) preloadAlienVoice(secretName);
+          gmSpeak('match_start', {
+            hunts: game.match?.totalHunts ?? names.length,
+            teams: names.length,
+            board: game.board.length,
+          });
+          gmSpeak('hunt_start', {
+            n: 1,
+            total: game.match?.totalHunts ?? names.length,
+            starter: game.teams[0]?.name ?? '—',
+          });
+          paint();
+        },
+        onHome: () => {
+          gmClear();
+          resetEverything();
+          currentScreen = 'home';
+          paint();
+        },
+      });
+    }
   }
 }
 
 function announceMatchDone() {
   playSFX('match-done');
+  // Solo doesn't announce trophies — the SoloDone screen uses its own framing
+  // around personal best.
+  if (game.mode === 'solo') return;
   gmSpeak('match_done', {});
   // Compute Eliminator Champion (most cumulative elims; tiebreak by fewest turns)
   const ranked = [...game.teams].sort((a, b) => {

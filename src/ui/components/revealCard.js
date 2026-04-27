@@ -32,7 +32,29 @@ function renderCelebration(container, move) {
   const secret = game.secretAlien;
   const huntIdx = game.match?.huntIndex ?? 1;
   const questionsThisHunt = game.moves.filter(m => m.type === 'ask').length;
+  const isSolo = game.mode === 'solo';
 
+  if (isSolo) {
+    // Solo: simple celebration, no detective/leader chrome — those framings
+    // imply competition. The SoloDone screen takes over with score + PB next.
+    container.innerHTML = `
+      <div class="celebration-card">
+        <div class="celebration-headline">YOU FOUND ME!</div>
+        <div class="celebration-alien">
+          <div class="alien-card celebration-alien-card">
+            <div class="alien-svg-wrap">${secret ? renderAlienHTML(secret) : ''}</div>
+            <div class="alien-name">${escape(secret?.name ?? '?')}</div>
+          </div>
+        </div>
+        <div class="celebration-line">
+          Found ${escape(secret?.name ?? 'the alien')} in <b>${questionsThisHunt}</b> question${questionsThisHunt === 1 ? '' : 's'}!
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Team mode: full Detective trophy framing + running Eliminator Champion.
   // Identify the running Eliminator Champion (most cumulative elims so far,
   // INCLUDING this hunt's eliminations which haven't yet been folded into
   // totalElim — endHunt does that on Continue).
