@@ -12,6 +12,7 @@ const escape = s => String(s ?? '').replace(/[&<>"']/g, c => ({
 export function renderScoreboard(container, opts = {}) {
   if (!container) return;
   const { highlightDetective, highlightLeader, activeTeamId } = opts;
+  const isSolo = game.mode === 'solo';
 
   // totalTurns is incremented in commitAsk per-ask, so it's a live cumulative count.
   // totalElim is folded in at endHunt; current-hunt eliminations live in t.elim
@@ -41,9 +42,9 @@ export function renderScoreboard(container, opts = {}) {
   const tbody = container.querySelector('tbody');
 
   for (const row of rows) {
-    const isDetective = highlightDetective && game.huntWinner === row.team.id;
-    const isLeader = highlightLeader && row.elim === topElim && topElim > 0;
-    const isNextUp = !!activeTeamId && row.team.id === activeTeamId && !game.huntWinner;
+    const isDetective = !isSolo && highlightDetective && game.huntWinner === row.team.id;
+    const isLeader = !isSolo && highlightLeader && row.elim === topElim && topElim > 0;
+    const isNextUp = !isSolo && !!activeTeamId && row.team.id === activeTeamId && !game.huntWinner;
     const tr = document.createElement('tr');
     if (isLeader) tr.classList.add('is-leader');
     if (isDetective) tr.classList.add('is-detective');
