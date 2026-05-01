@@ -415,6 +415,15 @@
 }
 .answer-reveal .answer-sub { font-size: 13px; margin-top: 10px; }
 .answer-reveal .elim-count { color: var(--yellow); font-weight: 900; font-size: 20px; }
+.answer-reveal .answer-coach {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+  font-weight: 600;
+  font-style: italic;
+  opacity: 0.95;
+}
 
 /* Hunt-won celebration card (Phase 1.9; theatrics in Phase 4) */
 .celebration-card {
@@ -515,6 +524,13 @@
 .coach-toggle .coach-state { font-weight: 900; letter-spacing: 0.15em; }
 .coach-toggle.on  .coach-state { color: var(--teal); }
 .coach-toggle.off .coach-state { color: var(--gray); }
+
+/* Coach UI is hover-driven (no useful trigger on touch); hide it on
+   touch-primary devices so the player isn't shown irrelevant advice. */
+@media (hover: none) {
+  #play-coach-toggle,
+  #split-slot { display: none; }
+}
 
 /* Solo done screen */
 .solo-done-card {

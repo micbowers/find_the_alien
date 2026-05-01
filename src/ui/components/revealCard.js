@@ -1,5 +1,6 @@
 import { game } from '../../core/state.js';
 import { renderAlienHTML } from '../../data/aliens.js';
+import { getCoachOn } from '../../core/prefs.js';
 
 // Render either the standard YES/NO answer card OR, when the move ended the
 // hunt (wonHuntByElimination), the big celebration card. Phase 4 will layer
@@ -19,11 +20,35 @@ export function renderRevealCard(container, move) {
   const elimLine = move.eliminated > 0
     ? `<span class="elim-count">${move.eliminated}</span> alien${move.eliminated === 1 ? '' : 's'} eliminated`
     : 'No new eliminations';
+
+  // Coach quality line — same 0.40 / 0.15 thresholds as the alien voice
+  // ladder in play.js so the spoken and written feedback stay in sync.
+  // aliveBefore reconstructs from current alive + this move's eliminations
+  // (commitAsk has already shrunk game.alive by move.eliminated).
+  let coachLine = '';
+  if (getCoachOn()) {
+    const aliveBefore = game.alive.size + move.eliminated;
+    const fraction = aliveBefore > 0 ? move.eliminated / aliveBefore : 0;
+    const pct = Math.round(fraction * 100);
+    let qualityText;
+    if (move.eliminated === 0) {
+      qualityText = `That didn't help — no aliens eliminated.`;
+    } else if (fraction >= 0.40) {
+      qualityText = `Excellent move! You eliminated ${pct}% of the aliens.`;
+    } else if (fraction >= 0.15) {
+      qualityText = `Decent move — you eliminated ${pct}% of the aliens.`;
+    } else {
+      qualityText = `Not a great question — you only eliminated ${pct}% of the aliens.`;
+    }
+    coachLine = `<div class="answer-coach">${qualityText}</div>`;
+  }
+
   container.innerHTML = `
     <div class="answer-reveal ${cls}">
       <div class="answer-word">${word}</div>
       <div class="answer-sub">${escape(move.questionText)}</div>
       <div class="answer-sub">${elimLine}</div>
+      ${coachLine}
     </div>
   `;
 }
