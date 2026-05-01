@@ -119,7 +119,9 @@ export function renderQuestionPicker(container, { onSelect, onPreview }) {
       if (onPreview) onPreview(resp.questionId);
     } else if (resp.interpretation === 'ambiguous' && Array.isArray(resp.candidates) && resp.candidates.length > 0) {
       renderAmbiguous(resp);
-      if (onPreview) onPreview(resp.candidates[0]);
+      // No auto-preview here — the user must hover a candidate to see its
+      // split. Picking the first as a default was arbitrary and confusing.
+      if (onPreview) onPreview(null);
       recordMissAndMaybeAutoOpen();
     } else {
       renderOffTopic(resp);
@@ -171,6 +173,15 @@ export function renderQuestionPicker(container, { onSelect, onPreview }) {
       btn.addEventListener('focusin', () => { if (onPreview) onPreview(btn.dataset.qid); });
       btn.addEventListener('click', () => { commit(btn.dataset.qid); });
     });
+    const candidatesContainer = statusEl.querySelector('.qp-candidates');
+    if (candidatesContainer) {
+      candidatesContainer.addEventListener('mouseleave', () => {
+        if (onPreview) onPreview(null);
+      });
+      candidatesContainer.addEventListener('focusout', () => {
+        if (onPreview) onPreview(null);
+      });
+    }
     statusEl.querySelector('#qp-edit2').addEventListener('click', () => {
       statusEl.innerHTML = '';
       if (onPreview) onPreview(null);
@@ -262,7 +273,10 @@ function renderCannedPicker(container, { onSelect, onPreview }) {
       btn.textContent = q.text;
       list.appendChild(btn);
     }
-    if (onPreview) onPreview(visible.length ? visible[0].id : null);
+    // Clear any leftover preview from a previous paint — the user must hover
+    // a pill to see a split now (the auto-show was misleading because it
+    // suggested advice without active engagement).
+    if (onPreview) onPreview(null);
   }
 
   search.addEventListener('input', paint);
@@ -270,9 +284,15 @@ function renderCannedPicker(container, { onSelect, onPreview }) {
     const btn = e.target.closest('.question-pill');
     if (btn && onPreview) onPreview(btn.dataset.qid);
   });
+  list.addEventListener('mouseleave', () => {
+    if (onPreview) onPreview(null);
+  });
   list.addEventListener('focusin', e => {
     const btn = e.target.closest('.question-pill');
     if (btn && onPreview) onPreview(btn.dataset.qid);
+  });
+  list.addEventListener('focusout', () => {
+    if (onPreview) onPreview(null);
   });
   list.addEventListener('click', e => {
     const btn = e.target.closest('.question-pill');

@@ -525,10 +525,11 @@
 .coach-toggle.on  .coach-state { color: var(--teal); }
 .coach-toggle.off .coach-state { color: var(--gray); }
 
-/* Coach UI is hover-driven (no useful trigger on touch); hide it on
-   touch-primary devices so the player isn't shown irrelevant advice. */
+/* Split preview is hover-driven (no useful trigger on touch); hide just
+   the preview slot on touch-primary devices. The Coach toggle stays
+   visible because it still controls the post-question quality text on
+   the reveal card. */
 @media (hover: none) {
-  #play-coach-toggle,
   #split-slot { display: none; }
 }
 
