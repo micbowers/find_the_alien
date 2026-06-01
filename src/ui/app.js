@@ -218,6 +218,7 @@ export function mountApp(rootEl) {
 
       <footer class="brand-footer">
         <span class="footer-brand">A Sparkworks game</span>
+        <a class="footer-link" href="https://www.sparkworks.kids/practice" target="_blank" rel="noopener">More games &amp; practice &rarr;</a>
         <span>Think Through Anything</span>
       </footer>
     </div>

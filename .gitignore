@@ -6,4 +6,6 @@ dist
 .tmp
 *.log
 .DS_Store
+desktop.ini
+Thumbs.db
 public/aliens/orig

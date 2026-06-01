@@ -53,6 +53,7 @@ export function renderMatchDoneScreen(container, { onPlayAgain, onHome }) {
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn big" id="md-again">▶ Play again — same teams</button>
         <button class="btn outline" id="md-home">Choose new teams</button>
+        <a class="btn outline" href="https://www.sparkworks.kids/practice" target="_blank" rel="noopener">More games &amp; practice →</a>
       </div>
     </div>
   `;

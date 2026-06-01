@@ -147,6 +147,8 @@
 .btn.outline:hover { border-color: var(--ember); color: var(--ember); }
 .btn.big { padding: 16px 28px; font-size: 15px; }
 .btn.danger { background: #b33a3a; }
+/* Anchors styled as buttons (e.g. the "more games" cross-sell CTA). */
+a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 
 /* Stats row */
 .stats-row { display: flex; gap: 10px; }

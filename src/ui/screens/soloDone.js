@@ -80,6 +80,7 @@ export function renderSoloDoneScreen(container, { onPlayAgain, onHome }) {
       <div class="solo-done-actions">
         <button class="btn big" id="sd-again">▶ Play again</button>
         <button class="btn outline" id="sd-home">← Home</button>
+        <a class="btn outline" href="https://www.sparkworks.kids/practice" target="_blank" rel="noopener">More games &amp; practice →</a>
       </div>
     </div>
   `;
